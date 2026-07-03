@@ -12,14 +12,14 @@ class UpdateUserRequest extends FormRequest
         return $this->user()?->hasRole('admin') ?? false;
     }
 
+
+
     public function rules(): array
     {
-        $userId = $this->route('id');
+        $userId = $this->route('user');
 
         return [
-            'name' => 'nullable|string|max:255',
             'full_name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $userId,
             'company_id' => 'nullable|numeric|exists:companies,id',
             'service_id' => 'nullable|numeric|exists:services,id',
@@ -31,14 +31,20 @@ class UpdateUserRequest extends FormRequest
 
     public function attributes(): array
     {
-        return [
-            'name' => "Nom d'utilisateur",
+        $attributes = [
             'full_name' => 'Nom complet',
-            'phone' => 'Téléphone',
             'email' => 'Adresse e-mail',
             'company_id' => 'Société',
             'service_id' => 'Service',
             'code' => 'Matricule',
         ];
+
+        if (is_array($this->input('roles'))) {
+            foreach ($this->input('roles') as $index => $roleName) {
+                $attributes["roles.$index"] = $roleName;
+            }
+        }
+
+        return $attributes;
     }
 }

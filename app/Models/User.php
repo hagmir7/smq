@@ -31,4 +31,38 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function withMergedPermissions()
+    {
+        $this->loadMissing('roles:id,name', 'permissions:id,name', 'roles.permissions:id,name');
+
+        $mergedPermissions = $this->permissions
+            ->merge($this->roles->flatMap->permissions)
+            ->unique('id')
+            ->values();
+
+        $response = $this->toArray();
+
+        $response['roles'] = collect($response['roles'])
+            ->map(function ($role) {
+                unset($role['permissions']);
+                return $role;
+            })
+            ->values();
+
+        $response['permissions'] = $mergedPermissions;
+
+        return $response;
+    }
+
+
+
+    public function company(){
+        return $this->belongsTo(Company::class);
+    }
+
+
+    public function service(){
+        return $this->belongsTo(Service::class);
+    }
 }

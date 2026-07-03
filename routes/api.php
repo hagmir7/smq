@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
@@ -7,42 +8,33 @@ use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-
-Route::post('users', [UserController::class, 'store']);
-
 Route::get('/user', function (Request $request) {
-    return $request->user();
+    $user = $request->user()->load('company:id,name', 'service:id,name');
+    return response()->json($user->withMergedPermissions());
 })->middleware('auth:sanctum');
 
-      Route::apiResource('companies', CompanyController::class);
+Route::post('users/login', [UserController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    
+    Route::apiResource('companies', CompanyController::class);
+    Route::apiResource('services', ServiceController::class);
 
-    Route::put('users/{user}', [UserController::class, 'update']);
-    Route::delete('users/{user}', [UserController::class, 'delete']);
-     Route::post('users/login', [UserController::class, 'login']);
-
-
-    Route::get('/permissions', [PermissionController::class, 'index']);
-    Route::post('/permissions', [PermissionController::class, 'store']);
-
-    // Assign roles/permissions to users
-    Route::get('users/role/{role}', [UserController::class, 'usersByRole']);
-
-  
-
-  
-
-    Route::get('users/roles/{role}', [RoleController::class, 'roleUsers']);
-    
-    Route::post('users/{user}/roles', [UserPermissionController::class, 'assignRoles']);
-    Route::post('role/{roleName}/permissions', [UserPermissionController::class, 'assignPermissions']);
-
-    // Get user Role and permissions
-    Route::get('/user/{id}/permissions', [UserPermissionController::class, 'getUserRolesAndPermissions']);
-    Route::get('/user/permissions', [UserPermissionController::class, 'getAuthUserRolesAndPermissions']);
-    
+    Route::apiResource('users', UserController::class);
+    Route::get('users/{user}/roles', [UserController::class, 'roles']);
+    Route::post('users/{userId}/permissions', [UserController::class, 'assignPermissions']);
+    Route::put('users/{userId}/permissions', [UserController::class, 'syncPermissions']);
+    Route::delete('users/{userId}/permissions', [UserController::class, 'revokePermissions']);
 
 
+    Route::apiResource('roles', RoleController::class);
+    Route::get('roles/{roleName}/users', [RoleController::class, 'users']);
+
+    Route::post('roles/{roleId}/permissions', [RoleController::class, 'assignPermissions']);
+    Route::put('roles/{roleId}/permissions', [RoleController::class, 'syncPermissions']);
+    Route::delete('roles/{roleId}/permissions', [RoleController::class, 'revokePermissions']);
+
+
+    Route::apiResource('permissions', PermissionController::class);
+    Route::get('permissions/{id}/users', [PermissionController::class, 'users']);
+    Route::get('permissions/{id}/roles', [PermissionController::class, 'roles']);
 });

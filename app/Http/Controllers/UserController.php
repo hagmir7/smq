@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
@@ -43,15 +44,25 @@ class UserController extends Controller
     }
 
 
+    public function show(User $user)
+    {
+         $user->load('company:id,name', 'service:id,name');
+        return response()->json($user);
+    }
+
+
+    public function roles(User $user)
+    {
+        return response()->json($user->withMergedPermissions());
+    }
+    
     public function update(UpdateUserRequest $request, int $id): JsonResponse
     {
         $user = User::findOrFail($id);
 
         $user->update($request->only([
-            'name',
             'full_name',
             'email',
-            'phone',
             'company_id',
             'service_id',
             'code',
@@ -65,17 +76,6 @@ class UserController extends Controller
             'message' => 'Utilisateur mis à jour avec succès',
             'user' => $user,
         ]);
-    }
-
-    public function usersByRole(string $role): JsonResponse
-    {
-        abort_unless(auth()->user()->hasRole('admin'), 403, "Vous n'êtes pas autorisé");
-
-        $users = User::role($role)
-            ->select('id', 'name', 'full_name', 'status')
-            ->get();
-
-        return response()->json($users);
     }
 
     public function login(Request $request): JsonResponse
@@ -130,14 +130,6 @@ class UserController extends Controller
         return response()->json(['message' => 'Mot de passe mis à jour avec succès']);
     }
 
-    public function usersActions(): JsonResponse
-    {
-        abort_unless(auth()->user()->hasRole('admin'), 403, "Vous n'êtes pas autorisé");
-
-        return response()->json(
-            User::withCount('movements')->get()
-        );
-    }
 
 
 
@@ -149,4 +141,121 @@ class UserController extends Controller
 
         return response()->json(['message' => 'Utilisateur supprimé avec succès']);
     }
+
+        /**
+     * Assign one or more permissions directly to a user.
+     * body: { "permissions": ["edit posts", "delete posts"] }
+     */
+    public function assignPermissions(Request $request, $userId)
+    {
+        abort_unless(auth()->user()->hasRole('admin'), 403, "Vous n'êtes pas autorisé");
+
+        $user = User::find($userId);
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Utilisateur introuvable',
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'permissions' => 'required|array|min:1',
+            'permissions.*' => 'string|exists:permissions,name',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user->givePermissionTo($request->permissions);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Permissions assignées à l\'utilisateur avec succès',
+            'data' => $user->getDirectPermissions()->select('id', 'name'),
+        ]);
+    }
+
+    /**
+     * Replace ALL direct permissions on a user with the given list.
+     * body: { "permissions": ["edit posts", "delete posts"] }
+     */
+    public function syncPermissions(Request $request, $userId)
+    {
+        abort_unless(auth()->user()->hasRole('admin'), 403, "Vous n'êtes pas autorisé");
+
+        $user = User::find($userId);
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Utilisateur introuvable',
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'permissions' => 'array',
+            'permissions.*' => 'string|exists:permissions,name',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user->syncPermissions($request->permissions ?? []);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Permissions de l\'utilisateur synchronisées avec succès',
+            'data' => $user->getDirectPermissions()->select('id', 'name'),
+        ]);
+    }
+
+    /**
+     * Remove one or more direct permissions from a user.
+     * body: { "permissions": ["edit posts"] }
+     */
+    public function revokePermissions(Request $request, $userId)
+    {
+        abort_unless(auth()->user()->hasRole('admin'), 403, "Vous n'êtes pas autorisé");
+
+        $user = User::find($userId);
+
+        if (!$user) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Utilisateur introuvable',
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'permissions' => 'required|array|min:1',
+            'permissions.*' => 'string|exists:permissions,name',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        foreach ($request->permissions as $permissionName) {
+            $user->revokePermissionTo($permissionName);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Permissions retirées de l\'utilisateur avec succès',
+            'data' => $user->getDirectPermissions()->select('id', 'name'),
+        ]);
+    }
+
 }

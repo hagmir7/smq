@@ -57,12 +57,19 @@ class User extends Authenticatable
 
 
 
-    public function company(){
+    public function company()
+    {
         return $this->belongsTo(Company::class);
     }
 
 
-    public function service(){
+    public function service()
+    {
         return $this->belongsTo(Service::class);
+    }
+
+    public function responsibleForServices()
+    {
+        return $this->hasMany(ImprovementSheetResponsible::class, 'responsable_id');
     }
 }

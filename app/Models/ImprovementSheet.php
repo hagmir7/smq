@@ -2,15 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ImprovementSheet extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'code',
         'corrective_action_id',
@@ -30,10 +26,10 @@ class ImprovementSheet extends Model
     ];
 
     protected $casts = [
-        'closed' => 'boolean',
-        'effectiveness' => 'boolean',
+        'closed'           => 'boolean',
+        'effectiveness'    => 'boolean',
         'observation_date' => 'date',
-        'closing_date' => 'date',
+        'closing_date'     => 'date',
     ];
 
     public function correctiveAction(): BelongsTo
@@ -41,9 +37,6 @@ class ImprovementSheet extends Model
         return $this->belongsTo(CorrectiveAction::class);
     }
 
-    /**
-     * User responsible for the improvement sheet.
-     */
     public function responsable(): BelongsTo
     {
         return $this->belongsTo(User::class, 'responsable_id');
@@ -54,8 +47,13 @@ class ImprovementSheet extends Model
         return $this->belongsTo(Service::class);
     }
 
-    public function improvementActions(): HasMany
+    public function improvementActions()
     {
         return $this->hasMany(ImprovementAction::class);
+    }
+
+    public function responsibles()
+    {
+        return $this->hasMany(ImprovementSheetResponsible::class);
     }
 }

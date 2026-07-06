@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('server');
             $table->string('username');
-            $table->string('password');
+            $table->string('password')->nullable();
             $table->boolean('auth_win')->default(false);
             $table->boolean('status')->nullable();
             $table->timestamps();

@@ -80,4 +80,5 @@ class CorrectiveAction extends Model
     {
         return $this->hasMany(ImprovementSheet::class);
     }
+
 }

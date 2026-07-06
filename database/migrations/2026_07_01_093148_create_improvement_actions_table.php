@@ -17,7 +17,7 @@ return new class extends Migration
         Schema::create('improvement_actions', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(ImprovementSheet::class);
-            $table->integer('code')->unique();
+            $table->string('code')->unique();
             $table->longText('description');
             $table->foreignIdFor(User::class, 'responsable_id');
             $table->foreignIdFor(Service::class);

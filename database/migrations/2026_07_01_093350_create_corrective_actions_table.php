@@ -17,7 +17,7 @@ return new class extends Migration
     {
         Schema::create('corrective_actions', function (Blueprint $table) {
             $table->id();
-            $table->integer('code')->unique();
+            $table->string('code')->unique();
             $table->longText('description');
             $table->string('type', 30)->default('Action corrective');
             $table->string('effectiveness_criteria', 500)->nullable(); // critères d'efficacité

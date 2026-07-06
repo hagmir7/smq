@@ -20,6 +20,7 @@ class Connection extends Model
     protected $casts = [
         'auth_win' => 'boolean',
         'status' => 'boolean',
+        'password' => 'encrypted',
     ];
 
     protected $hidden = [

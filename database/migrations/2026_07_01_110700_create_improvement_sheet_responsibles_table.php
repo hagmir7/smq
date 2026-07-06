@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\ImprovementSheet;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
@@ -16,7 +17,8 @@ return new class extends Migration
         Schema::create('improvement_sheet_responsibles', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Service::class);
-             $table->foreignIdFor(User::class, 'responsable_id');
+            $table->foreignIdFor(User::class, 'responsable_id');
+            $table->foreignIdFor(ImprovementSheet::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

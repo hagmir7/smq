@@ -6,10 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Reclamation extends Model
+
+class Reclamation extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     protected $fillable = [
         'claimant_date',
@@ -35,6 +39,7 @@ class Reclamation extends Model
         'closing_date',
         'received_at',
         'user_id',
+        'code'
     ];
 
     protected $casts = [
@@ -46,6 +51,32 @@ class Reclamation extends Model
         'is_justifiee' => 'boolean',
         'workflow_step' => 'integer',
     ];
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('attachments')
+            ->useDisk('public') // or 's3', whatever your disk is
+            ->acceptsMimeTypes([
+                'application/pdf',
+                'image/jpeg',
+                'image/png',
+                'image/webp',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ]);
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(200)
+            ->height(200)
+            ->performOnCollections('attachments')
+            ->nonQueued(); // keep it simple; drop this if you queue conversions
+    }
+
+
+
 
     /**
      * User responsible for handling the reclamation.

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ImprovementJournalController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CompanyController;
@@ -87,13 +88,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('improvement-sheets')->group(function () {
         Route::get('/', [ImprovementSheetController::class, 'index']);
-        Route::get('/{improvementSheet}', [ImprovementSheetController::class, 'show']);
+        Route::get('{improvementSheet}', [ImprovementSheetController::class, 'show']);
         Route::post('/', [ImprovementSheetController::class, 'store']);
-        Route::put('/{improvementSheet}', [ImprovementSheetController::class, 'update']);
-        Route::patch('/{improvementSheet}/evaluate', [ImprovementSheetController::class, 'evaluate']);
+        Route::put('{improvementSheet}', [ImprovementSheetController::class, 'update']);
+        Route::patch('{improvementSheet}/evaluate', [ImprovementSheetController::class, 'evaluate']);
         Route::delete('/{improvementSheet}', [ImprovementSheetController::class, 'destroy']);
-        Route::get('/{improvementSheet}/improvement-actions', [ImprovementSheetController::class, 'improvementActions']);
-        Route::post('/{improvementSheet}/improvement-actions', [ImprovementSheetController::class, 'improvementActionsStore']);
+        Route::get('{improvementSheet}/improvement-actions', [ImprovementSheetController::class, 'improvementActions']);
+        Route::post('{improvementSheet}/improvement-actions', [ImprovementSheetController::class, 'improvementActionsStore']);
 
         Route::get('{improvementSheet}/responsibles', [ImprovementSheetController::class, 'responsibles']);
         Route::post('{improvementSheet}/responsibles', [ImprovementSheetController::class, 'responsiblesStore']);
@@ -103,24 +104,24 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('improvement-actions')->group(function () {
         Route::get('/', [ImprovementActionController::class, 'index']);
-        Route::get('/{improvementAction}', [ImprovementActionController::class, 'show']);
-        Route::put('/{improvementAction}', [ImprovementActionController::class, 'update']);
-        Route::patch('/{improvementAction}/complete', [ImprovementActionController::class, 'complete']);
-        Route::delete('/{improvementAction}', [ImprovementActionController::class, 'destroy']);
+        Route::get('{improvementAction}', [ImprovementActionController::class, 'show']);
+        Route::put('{improvementAction}', [ImprovementActionController::class, 'update']);
+        Route::patch('{improvementAction}/complete', [ImprovementActionController::class, 'complete']);
+        Route::delete('{improvementAction}', [ImprovementActionController::class, 'destroy']);
     });
 
     Route::prefix('connections')->group(function () {
         Route::get('/', [ConnectionController::class, 'index']);
-        Route::get('/{connection}', [ConnectionController::class, 'show']);
+        Route::get('{connection}', [ConnectionController::class, 'show']);
         Route::post('/', [ConnectionController::class, 'store']);
-        Route::put('/{connection}', [ConnectionController::class, 'update']);
-        Route::post('/{connection}/test', [ConnectionController::class, 'test']);
-        Route::delete('/{connection}', [ConnectionController::class, 'destroy']);
+        Route::put('{connection}', [ConnectionController::class, 'update']);
+        Route::post('{connection}/test', [ConnectionController::class, 'test']);
+        Route::delete('{connection}', [ConnectionController::class, 'destroy']);
     });
 
 
-    Route::apiResource('improvement-sheet-responsibles', ImprovementSheetResponsibleController::class );
+    Route::apiResource('improvement-sheet-responsibles', ImprovementSheetResponsibleController::class);
 
-
-    
+    Route::get('journal-entries', [ImprovementJournalController::class, 'index']);
+    Route::get('journal-entries/{improvementJournal}', [ImprovementJournalController::class, 'show']);
 });

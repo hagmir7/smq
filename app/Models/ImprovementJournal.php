@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class ImprovementJournal extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
+        'source_type',
+        'source_id',
         'date',
         'finding_source',
         'initial_finding_description',
@@ -27,9 +27,14 @@ class ImprovementJournal extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
-        'actual_date' => 'date',
+        'date'         => 'date',
+        'actual_date'  => 'date',
         'closure_date' => 'date',
         'effectiveness' => 'boolean',
     ];
+
+    public function source(): MorphTo
+    {
+        return $this->morphTo();
+    }
 }

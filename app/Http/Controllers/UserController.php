@@ -17,6 +17,11 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends Controller
 {
 
+    public function index(): JsonResponse
+    {
+        return response()->json(User::paginate(15));
+    }
+
     public function store(StoreUserRequest $request): JsonResponse
     {
         $user = DB::transaction(function () use ($request) {
@@ -44,7 +49,7 @@ class UserController extends Controller
     }
 
 
-    public function show(User $user)
+    public function show(User $user) : JsonResponse
     {
          $user->load('company:id,name', 'service:id,name');
         return response()->json($user);

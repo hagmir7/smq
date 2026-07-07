@@ -27,9 +27,9 @@ class ImprovementJournal extends Model
     ];
 
     protected $casts = [
-        'date'         => 'date',
-        'actual_date'  => 'date',
-        'closure_date' => 'date',
+        'date'          => 'date',
+        'actual_date'   => 'date',
+        'closure_date'  => 'date',
         'effectiveness' => 'boolean',
     ];
 

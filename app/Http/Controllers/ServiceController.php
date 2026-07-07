@@ -42,17 +42,8 @@ class ServiceController extends Controller
         $perPage = (int) $request->input('per_page', 20);
         $services = $query->paginate($perPage);
 
-        return response()->json([
-            'data' => ServiceResource::collection($services),
-            'meta' => [
-                'current_page' => $services->currentPage(),
-                'last_page' => $services->lastPage(),
-                'per_page' => $services->perPage(),
-                'total' => $services->total(),
-            ],
-        ]);
+        return response()->json($services);
     }
-
     /**
      * Store a newly created resource in storage.
      */

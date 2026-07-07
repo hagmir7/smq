@@ -21,6 +21,12 @@ Route::get('/user', function (Request $request) {
     return response()->json($user->withMergedPermissions());
 })->middleware('auth:sanctum');
 
+
+Route::get('/', function () {
+    return ['message' => "Success"];
+});
+
+
 Route::post('users/login', [UserController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -34,6 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('{user}/permissions', 'assignPermissions');
         Route::put('{user}/permissions', 'syncPermissions');
         Route::delete('{user}/permissions', 'revokePermissions');
+        Route::patch('{user}/update-password', 'updateUserPassword');
     });
 
 

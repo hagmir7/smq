@@ -11,25 +11,25 @@ return new class extends Migration
         Schema::create('improvement_journals', function (Blueprint $table) {
             $table->id();
 
-            // Link back to the originating record (ImprovementSheet or ImprovementAction)
-            $table->nullableMorphs('source'); // creates source_type + source_id, nullable
+            // Link to the originating record (ImprovementSheet or ImprovementAction)
+            $table->nullableMorphs('source'); // source_type + source_id
 
             // Description du Constat
             $table->date('date')->nullable();
-            $table->string('finding_source')->nullable();
+            $table->string('finding_source', 255)->nullable();
             $table->text('initial_finding_description')->nullable();
             $table->text('root_cause_analysis')->nullable();
 
             // Description de l'action
             $table->text('action')->nullable();
-            $table->string('action_type')->nullable();
+            $table->string('action_type', 255)->nullable();
 
             // Planification de l'action
-            $table->string('process')->nullable();
-            $table->string('responsible')->nullable();
-            $table->string('planned_deadline')->nullable();
+            $table->string('process', 255)->nullable();
+            $table->string('responsible', 255)->nullable();
+            $table->string('planned_deadline', 255)->nullable();
 
-            // Réalisation et suivi de l'efficacité
+            // Réalisation et suivi de l'efficacité de l'action
             $table->date('actual_date')->nullable();
             $table->text('effectiveness_criteria')->nullable();
             $table->boolean('effectiveness')->nullable();
@@ -37,6 +37,7 @@ return new class extends Migration
 
             // Observations
             $table->text('observations')->nullable();
+
             $table->timestamps();
         });
     }

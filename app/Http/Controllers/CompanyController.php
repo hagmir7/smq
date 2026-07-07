@@ -19,10 +19,7 @@ class CompanyController extends Controller
     {
         $companies = Company::latest()->paginate(15);
 
-        return response()->json([
-            'success' => true,
-            'data' => $companies,
-        ]);
+        return response()->json($companies);
     }
 
     /**

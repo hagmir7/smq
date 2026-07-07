@@ -19,7 +19,7 @@ class UserController extends Controller
 
     public function index(): JsonResponse
     {
-        return response()->json(User::paginate(15));
+        return response()->json(User::with('service')->paginate(15));
     }
 
     public function store(StoreUserRequest $request): JsonResponse
@@ -102,7 +102,7 @@ class UserController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'user' => $user,
+            'user' => $user->withMergedPermissions(),
         ]);
     }
 

@@ -74,13 +74,13 @@ class RoleController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $roleName)
     {
         if ($response = $this->authorizeAdmin()) {
             return $response;
         }
 
-        $role = Role::find($id);
+        $role = Role::where('name',$roleName)->first();
 
         if (!$role) {
             return response()->json([
@@ -104,13 +104,13 @@ class RoleController extends Controller
         return response()->json($role);
     }
 
-    public function destroy($id)
+    public function destroy($roleName)
     {
         if ($response = $this->authorizeAdmin()) {
             return $response;
         }
 
-        $role = Role::find($id);
+        $role = Role::where('name', $roleName)->first();
 
         if (!$role) {
             return response()->json([
@@ -145,11 +145,11 @@ class RoleController extends Controller
      * Assign one or more permissions to a role.
      * body: { "permissions": ["edit posts", "delete posts"] }
      */
-    public function assignPermissions(Request $request, $roleId)
+    public function assignPermissions(Request $request, $roleName)
     {
         abort_unless(auth()->user()->hasRole('admin'), 403, "Vous n'êtes pas autorisé");
 
-        $role = Role::find($roleId);
+        $role = Role::where('name', $roleName)->first();
 
         if (!$role) {
             return response()->json([
@@ -183,11 +183,11 @@ class RoleController extends Controller
      * Replace ALL permissions on a role with the given list.
      * body: { "permissions": ["edit posts", "delete posts"] }
      */
-    public function syncPermissions(Request $request, $roleId)
+    public function syncPermissions(Request $request, $roleName)
     {
         abort_unless(auth()->user()->hasRole('admin'), 403, "Vous n'êtes pas autorisé");
 
-        $role = Role::find($roleId);
+        $role = Role::where('name', $roleName)->first();
 
         if (!$role) {
             return response()->json([

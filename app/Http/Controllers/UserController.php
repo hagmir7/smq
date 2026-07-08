@@ -52,7 +52,7 @@ class UserController extends Controller
     public function show(User $user) : JsonResponse
     {
          $user->load('company:id,name', 'service:id,name');
-        return response()->json($user);
+        return response()->json($user->withMergedPermissions());
     }
 
 
@@ -97,6 +97,16 @@ class UserController extends Controller
         }
 
         $user = Auth::user();
+
+        // Prevent inactive users from logging in
+        if (! $user->is_active) {
+            Auth::logout();
+
+            return response()->json([
+                'message' => __("Votre compte est désactivé. Veuillez contacter l'administrateur."),
+            ], 403);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -142,9 +152,21 @@ class UserController extends Controller
     {
         abort_unless(auth()->user()->hasRole('admin'), 403, "Vous n'êtes pas autorisé");
 
-        $user->update(['is_active' => false]);
+        // Delete all Sanctum tokens
+        $user->tokens()->delete();
 
-        return response()->json(['message' => 'Utilisateur supprimé avec succès']);
+
+        if (!$user->is_active) {
+            $user->delete();
+        } else {
+            $user->update([
+                'is_active' => false,
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Utilisateur supprimé avec succès',
+        ]);
     }
 
         /**

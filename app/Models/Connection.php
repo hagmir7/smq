@@ -11,6 +11,7 @@ class Connection extends Model
 
     protected $fillable = [
         'server',
+        'name',
         'username',
         'password',
         'auth_win',

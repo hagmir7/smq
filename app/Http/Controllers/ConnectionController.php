@@ -41,6 +41,7 @@ class ConnectionController extends Controller
     {
         $validated = $request->validate([
             'server'      => ['required', 'string', 'max:255'],
+            'name'      => ['required', 'string', 'max:255'],
             'username'    => ['required', 'string', 'max:255'],
             'password'    => ['required_if:auth_win,false', 'nullable', 'string', 'max:255'],
             'auth_win'    => ['sometimes', 'boolean'],
@@ -61,6 +62,7 @@ class ConnectionController extends Controller
     {
         $validated = $request->validate([
             'server'   => ['sometimes', 'string', 'max:255'],
+            'name'      => ['required', 'string', 'max:255'],
             'username' => ['sometimes', 'string', 'max:255'],
             'password' => ['sometimes', 'nullable', 'string', 'max:255'],
             'auth_win' => ['sometimes', 'boolean'],

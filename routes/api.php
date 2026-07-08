@@ -48,8 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('roles', RoleController::class);
     Route::prefix('roles')->controller(RoleController::class)->group(function () {
         Route::get('{role}/users', 'users');
-        Route::post('{role}/permissions', 'assignPermissions');
-        Route::put('{role}/permissions', 'syncPermissions');
+        Route::post('{role:name}/permissions', 'assignPermissions');
+        Route::put('{role:name}/permissions', 'syncPermissions');
         Route::delete('{role}/permissions', 'revokePermissions');
     });
 

@@ -34,14 +34,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('services', ServiceController::class);
     Route::apiResource('clients', ClientController::class);
 
-    Route::apiResource('users', UserController::class);
+    
     Route::prefix('users')->controller(UserController::class)->group(function () {
+        Route::get('responsibles', 'responsibles');
         Route::get('{user}/roles', 'roles');
+
         Route::post('{user}/permissions', 'assignPermissions');
         Route::put('{user}/permissions', 'syncPermissions');
         Route::delete('{user}/permissions', 'revokePermissions');
         Route::patch('{user}/update-password', 'updateUserPassword');
     });
+    Route::apiResource('users', UserController::class);
+
+    
 
 
     // Roles

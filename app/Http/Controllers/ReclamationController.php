@@ -228,6 +228,7 @@ class ReclamationController extends Controller
     public function correctiveActions(Reclamation $reclamation): JsonResponse
     {
         $actions = $reclamation->correctiveActions()
+            ->where('parent_id', null)
             ->with(['service', 'responsable', 'user', 'parent', 'children'])
             ->latest()
             ->get();

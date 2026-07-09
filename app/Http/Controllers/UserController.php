@@ -6,6 +6,7 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Requests\UpdateUserPasswordRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -284,5 +285,15 @@ class UserController extends Controller
             'data' => $user->getDirectPermissions()->select('id', 'name'),
         ]);
     }
+
+
+        public function responsibles(): JsonResponse
+        {
+            $responsibleIds = Service::whereNotNull('responsible_id')
+                ->pluck('responsible_id')
+                ->unique();
+
+            return response()->json(User::whereIn('id', $responsibleIds)->get());
+        }
 
 }

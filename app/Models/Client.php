@@ -18,6 +18,8 @@ class Client extends Model
         'address',
     ];
 
+    protected $dateFormat = 'Y-m-d\TH:i:s.v';
+
     /**
      * Reclamations linked via matching client code
      * (reclamations.client_code -> clients.code).

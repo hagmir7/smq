@@ -7,6 +7,10 @@ use App\Models\ImprovementSheet;
 use App\Observers\ImprovementActionObserver;
 use App\Observers\ImprovementSheetObserver;
 use Illuminate\Support\ServiceProvider;
+use App\Models\PersonalAccessToken;
+use Laravel\Sanctum\Sanctum;
+
+
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
         ImprovementSheet::observe(ImprovementSheetObserver::class);
         ImprovementAction::observe(ImprovementActionObserver::class);
     }

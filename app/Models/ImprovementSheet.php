@@ -25,6 +25,8 @@ class ImprovementSheet extends Model
         'closing_date',
     ];
 
+    protected $dateFormat = 'Y-m-d\TH:i:s.v';
+
     protected $casts = [
         'closed'           => 'boolean',
         'effectiveness'    => 'boolean',

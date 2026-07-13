@@ -13,4 +13,6 @@ class Company extends Model
         'name',
         'description',
     ];
+
+    protected $dateFormat = 'Y-m-d\TH:i:s.v';
 }

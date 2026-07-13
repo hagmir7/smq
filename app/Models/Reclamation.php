@@ -52,6 +52,8 @@ class Reclamation extends Model implements HasMedia
         'workflow_step' => 'integer',
     ];
 
+    protected $dateFormat = 'Y-m-d\TH:i:s.v';
+
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('attachments')

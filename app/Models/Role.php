@@ -9,6 +9,8 @@ class Role extends SpatieRole
 {
     protected $fillable = ['name', 'guard_name'];
 
+    protected $dateFormat = 'Y-m-d\TH:i:s.v';
+
     public function getRouteKeyName(): string
     {
         return 'name';

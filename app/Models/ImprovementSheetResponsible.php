@@ -13,6 +13,10 @@ class ImprovementSheetResponsible extends Model
         'responsable_id',
     ];
 
+    
+
+    protected $dateFormat = 'Y-m-d\TH:i:s.v';
+
     public function improvementSheet(): BelongsTo
     {
         return $this->belongsTo(ImprovementSheet::class);
@@ -27,4 +31,6 @@ class ImprovementSheetResponsible extends Model
     {
         return $this->belongsTo(User::class, 'responsable_id');
     }
+
+
 }

@@ -28,4 +28,6 @@ class ReclamationRegister extends Model
         'actual_completion_date' => 'date',
         'closing_date' => 'date',
     ];
+
+    protected $dateFormat = 'Y-m-d\TH:i:s.v';
 }

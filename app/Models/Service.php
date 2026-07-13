@@ -16,6 +16,8 @@ class Service extends Model
         'responsible_id'
     ];
 
+    protected $dateFormat = 'Y-m-d\TH:i:s.v';
+
     public function responsible()
     {
         return $this->belongsTo(User::class, 'responsible_id');

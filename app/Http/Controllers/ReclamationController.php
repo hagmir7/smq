@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CorrectiveAction;
 use App\Models\Reclamation;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -45,15 +46,12 @@ class ReclamationController extends Controller
      */
     public function storeStepOne(Request $request): JsonResponse
     {
-        // Normalize: if a single file was sent as "attachments" (not attachments[]),
-        // wrap it into an array so validation/storage works either way.
         if ($request->hasFile('attachments') && !is_array($request->file('attachments'))) {
-            $request->merge([]); // no-op, just clarity
             $request->files->set('attachments', [$request->file('attachments')]);
         }
 
         $validated = $request->validate([
-            'claimant_date'        => ['required', 'date'],
+            'claimant_date'        => ['required', 'date_format:d/m/Y'],
             'claimant_name'        => ['required', 'string', 'max:200'],
             'client_code'          => ['required', 'string', 'max:255'],
             'client_phone'         => ['nullable', 'string', 'max:30'],
@@ -62,16 +60,23 @@ class ReclamationController extends Controller
             'reception_method'     => ['nullable', 'string', 'max:500'],
             'object'               => ['required', 'string', 'max:500'],
             'description'          => ['required', 'string'],
-            'received_at'          => ['nullable', 'date'],
+            'received_at'          => ['nullable', 'date_format:d/m/Y'],
 
             'attachments'          => ['nullable', 'array', 'max:10'],
             'attachments.*'        => ['file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,webp,doc,docx'],
         ]);
 
+        // Normalize French-formatted dates to Y-m-d before they hit Eloquent
+        $validated['claimant_date'] = Carbon::createFromFormat('d/m/Y', $validated['claimant_date'])->format('Y-m-d');
+
+        if (!empty($validated['received_at'])) {
+            $validated['received_at'] = Carbon::createFromFormat('d/m/Y', $validated['received_at'])->format('Y-m-d');
+        }
+
         $reclamation = DB::transaction(function () use ($request, $validated) {
             $reclamation = Reclamation::create([
                 ...collect($validated)->except('attachments')->all(),
-                'code'            => $this->generateCode(),
+                'code'          => $this->generateCode(),
                 'user_id'       => Auth::id(),
                 'statut'        => 'Ouverte',
                 'workflow_step' => 1,

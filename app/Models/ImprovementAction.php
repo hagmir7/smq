@@ -10,6 +10,8 @@ class ImprovementAction extends Model
 {
     use HasFactory;
 
+    protected $dateFormat = 'Y-m-d\TH:i:s.v';
+
     protected $fillable = [
         'improvement_sheet_id',
         'code',

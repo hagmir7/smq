@@ -26,6 +26,8 @@ class ImprovementJournal extends Model
         'observations',
     ];
 
+    protected $dateFormat = 'Y-m-d\TH:i:s.v';
+
     protected $casts = [
         'date'          => 'date',
         'actual_date'   => 'date',

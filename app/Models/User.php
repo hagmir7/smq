@@ -32,6 +32,8 @@ class User extends Authenticatable
         ];
     }
 
+    protected $dateFormat = 'Y-m-d\TH:i:s.v';
+
     public function withMergedPermissions()
     {
         $this->loadMissing('roles:id,name', 'permissions:id,name', 'roles.permissions:id,name');

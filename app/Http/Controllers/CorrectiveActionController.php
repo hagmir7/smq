@@ -24,6 +24,12 @@ class CorrectiveActionController extends Controller
             $query->where('reclamation_id', $request->integer('reclamation_id'));
         }
 
+        if ($request->filled('reclamation_code')) {
+            $query->whereHas('reclamation', function ($reclamation) use ($request) {
+                $reclamation->where('code', 'like', '%' . $request->input('reclamation_code') . '%');
+            });
+        }
+
         if ($request->filled('service_id')) {
             $query->where('service_id', $request->integer('service_id'));
         }

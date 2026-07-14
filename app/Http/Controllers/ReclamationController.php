@@ -161,6 +161,7 @@ class ReclamationController extends Controller
             'statut'            => $validated['is_recevable'] ? 'En cours' : 'Clôturée',
             'workflow_step'     => 2,
             'closing_date'      => $validated['is_recevable'] ? null : now(),
+            'registration_date'      => now(),
         ]);
 
         return response()->json([

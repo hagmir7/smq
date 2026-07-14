@@ -18,7 +18,7 @@ class CorrectiveActionController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = CorrectiveAction::query()
-            ->with(['reclamation', 'service', 'responsable', 'user', 'parent', 'children', 'children.reclamation:id,code,client_code', 'children.service', 'children.responsable:id,full_name']);
+            ->with(['reclamation', 'service', 'responsable', 'user', 'parent', 'children', 'children.reclamation:id,code,client_code', 'children.service', 'children.responsable:id,full_name', 'improvementSheets:id,code']);
 
         if ($request->filled('reclamation_id')) {
             $query->where('reclamation_id', $request->integer('reclamation_id'));

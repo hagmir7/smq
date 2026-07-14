@@ -46,6 +46,8 @@ class ImprovementSheetController extends Controller
             });
         }
 
+   
+
         $sheets = $query->latest()->paginate($request->integer('per_page', 15));
 
         return response()->json($sheets);

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class CorrectiveAction extends Model
 {
@@ -78,9 +79,9 @@ class CorrectiveAction extends Model
     /**
      * Improvement sheets raised from this corrective action.
      */
-    public function improvementSheets(): HasMany
+    public function improvementSheets(): HasOne
     {
-        return $this->hasMany(ImprovementSheet::class);
+        return $this->hasOne(ImprovementSheet::class, 'id', 'id');
     }
 
 }

@@ -39,6 +39,7 @@ class Reclamation extends Model implements HasMedia
         'closing_date',
         'received_at',
         'user_id',
+        'registration_date',
         'code'
     ];
 
@@ -50,6 +51,7 @@ class Reclamation extends Model implements HasMedia
         'is_recevable' => 'boolean',
         'is_justifiee' => 'boolean',
         'workflow_step' => 'integer',
+        'registration_date' => 'date'
     ];
 
     protected $dateFormat = 'Y-m-d\TH:i:s.v';

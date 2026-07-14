@@ -42,6 +42,7 @@ return new class extends Migration
             $table->date('planned_closing_date')->nullable();
             $table->date('closing_date')->nullable();
             $table->date('received_at')->nullable();
+            $table->dateTime('registration_date')->nullable();
             $table->foreignIdFor(User::class);
             $table->timestamps();
         });

@@ -42,13 +42,13 @@ class ConnectionController extends Controller
         $validated = $request->validate([
             'server'      => ['required', 'string', 'max:255'],
             'name'      => ['required', 'string', 'max:255'],
-            'username'    => ['required', 'string', 'max:255'],
+            'username'    => ['required_if:auth_win,false', 'string', 'max:255'],
             'password'    => ['required_if:auth_win,false', 'nullable', 'string', 'max:255'],
             'auth_win'    => ['sometimes', 'boolean'],
         ]);
 
         $connection = Connection::create($validated);
-
+        $this->test($connection);
         return response()->json([
             'message' => 'Connexion créée avec succès.',
             'data'    => $connection,
@@ -75,7 +75,7 @@ class ConnectionController extends Controller
         }
 
         $connection->update($validated);
-
+        $this->test($connection);
         return response()->json([
             'message' => 'Connexion mise à jour.',
             'data'    => $connection->fresh(),

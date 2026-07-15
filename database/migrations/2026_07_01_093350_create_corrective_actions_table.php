@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('effectiveness_criteria', 500)->nullable(); // critères d'efficacité
             $table->date('due_date')->nullable(); // date d'échéance
             $table->date('completion_date')->nullable(); // Date de réalisation
+            $table->string('status')->nullable();
 
             $table->string('effectiveness', 20)->nullable(); // Efficacité
             $table->foreignIdFor(Reclamation::class)->constrained()->cascadeOnDelete();

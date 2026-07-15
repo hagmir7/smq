@@ -28,6 +28,29 @@ class ReclamationController extends Controller
             $query->where('workflow_step', $request->integer('workflow_step'));
         }
 
+        // Free-text search across multiple columns
+        if ($request->filled('search')) {
+            $search = $request->string('search');
+
+            $query->where(function ($q) use ($search) {
+                $q->where('claimant_name', 'like', "%{$search}%")
+                ->orWhere('client_code', 'like', "%{$search}%")
+                ->orWhere('client_phone', 'like', "%{$search}%")
+                ->orWhere('client_email', 'like', "%{$search}%")
+                ->orWhere('code', 'like', "%{$search}%")
+                ->orWhere('client_company_name', 'like', "%{$search}%");
+            });
+        }
+
+        // Date range filter on claimant_date
+        if ($request->filled('claimant_date_from')) {
+            $query->whereDate('claimant_date', '>=', $request->date('claimant_date_from'));
+        }
+
+        if ($request->filled('claimant_date_to')) {
+            $query->whereDate('claimant_date', '<=', $request->date('claimant_date_to'));
+        }
+
         $reclamations = $query->latest()->paginate($request->integer('per_page', 15));
 
         return response()->json($reclamations);
@@ -179,7 +202,7 @@ class ReclamationController extends Controller
 
         if (!$reclamation->is_recevable) {
             return response()->json([
-                'message' => "Cette réclamation n'est pas recevable, l'étape 3 n'est pas applicable.",
+                'message' => "Cette réclamation n'est pas recevable, Traitement n'est pas applicable.",
             ], 422);
         }
 
@@ -265,6 +288,7 @@ class ReclamationController extends Controller
                 'type'            => $validated['type'] ?? 'Action corrective',
                 'reclamation_id'  => $reclamation->id,
                 'user_id'         => Auth::id(),
+                'status'              => $validated['responsable_id'] ? 'Affectée' : 'Créée'
             ]);
         });
 

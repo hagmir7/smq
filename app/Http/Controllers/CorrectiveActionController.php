@@ -18,15 +18,36 @@ class CorrectiveActionController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = CorrectiveAction::query()
-            ->with(['reclamation', 'service', 'responsable', 'user', 'parent', 'children', 'children.reclamation:id,code,client_code', 'children.service', 'children.responsable:id,full_name', 'improvementSheets:id,code']);
+            ->with([
+                'reclamation',
+                'service',
+                'responsable',
+                'user',
+                'parent',
+                'children',
+                'children.reclamation:id,code,client_code',
+                'children.service',
+                'children.responsable:id,full_name',
+                'improvementSheets:id,code'
+            ]);
 
         if ($request->filled('reclamation_id')) {
             $query->where('reclamation_id', $request->integer('reclamation_id'));
         }
 
         if ($request->filled('reclamation_code')) {
-            $query->whereHas('reclamation', function ($reclamation) use ($request) {
-                $reclamation->where('code', 'like', '%' . $request->input('reclamation_code') . '%');
+            $query->whereHas('reclamation', fn($r) =>
+            $r->where('code', 'like', '%' . $request->input('reclamation_code') . '%'));
+        }
+
+        // NEW: single search box matching the corrective action's own code
+        // OR its reclamation's code.
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                    ->orWhereHas('reclamation', fn($r) =>
+                    $r->where('code', 'like', "%{$search}%"));
             });
         }
 
@@ -38,11 +59,24 @@ class CorrectiveActionController extends Controller
             $query->where('effectiveness', $request->string('effectiveness'));
         }
 
+        // NEW: status filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->string('status'));
+        }
+
+        // NEW: created_at date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date('date_from'));
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date('date_to'));
+        }
+
         if ($request->boolean('root_only')) {
             $query->whereNull('parent_id');
         }
 
-         $query->whereNull('parent_id');
+        $query->whereNull('parent_id');
         $actions = $query->latest()->paginate($request->integer('per_page', 15));
 
         return response()->json($actions);
@@ -101,7 +135,9 @@ class CorrectiveActionController extends Controller
             'effectiveness'   => ['required', 'string', 'in:Efficace,Partiellement efficace,Non efficace'],
         ]);
 
-        $correctiveAction->update($validated);
+        $correctiveAction->update([...$validated,
+            'status' => 'Clôturée'
+        ]);
 
         return response()->json([
             'message' => 'Action corrective clôturée.',
@@ -130,7 +166,14 @@ class CorrectiveActionController extends Controller
             'reclamation_id' => $correctiveAction->reclamation_id,
             'parent_id'      => $correctiveAction->id,
             'user_id'        => Auth::id(),
+            'status'              => $validated['responsable_id'] ? 'Affectée' : 'Créée'
         ]);
+
+        $correctiveAction->update([
+            'status'  => 'En cours'
+        ]);
+
+
 
         return response()->json([
             'message' => 'Action corrective de suivi créée.',

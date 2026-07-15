@@ -21,6 +21,7 @@ class Reclamation extends Model implements HasMedia
         'client_code',
         'client_phone',
         'client_email',
+        'code',
         'client_company_name',
         'reception_method',
         'object',
@@ -40,7 +41,7 @@ class Reclamation extends Model implements HasMedia
         'received_at',
         'user_id',
         'registration_date',
-        'code'
+       
     ];
 
     protected $casts = [

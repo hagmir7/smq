@@ -41,8 +41,8 @@ class Reclamation extends Model implements HasMedia
         'received_at',
         'user_id',
         'registration_date',
-       
     ];
+    
 
     protected $casts = [
         'claimant_date' => 'date',

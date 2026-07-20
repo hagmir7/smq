@@ -298,6 +298,23 @@ class ReclamationController extends Controller
         ], 201);
     }
 
+    public function close(Request $request, Reclamation $reclamation): JsonResponse
+    {
+        $validated = $request->validate([
+            'closing_date' => ['required', 'date'],
+        ]);
+
+        $reclamation->update([
+            'closing_date' => $validated['closing_date'],
+            'status' => 'Clôturée', // Change to your status column/value
+        ]);
+
+        return response()->json([
+            'message' => 'Réclamation clôturée avec succès.',
+            'data' => $reclamation->fresh(),
+        ], 200);
+    }
+
 
 
 

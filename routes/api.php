@@ -137,4 +137,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('journal-entries', [ImprovementJournalController::class, 'index']);
     Route::get('journal-entries/{improvementJournal}', [ImprovementJournalController::class, 'show']);
+
+
+
+    Route::get('dashboard/states', [App\Http\Controllers\DashboardController::class, 'states']);
+    Route::get('dashboard/reclamations-per-month', [App\Http\Controllers\DashboardController::class, 'reclamationsPerMonth']);
+    Route::get('dashboard/last-reclamations', [App\Http\Controllers\DashboardController::class, 'lastReclamations']);
+    Route::get('dashboard/reclamation-states', [App\Http\Controllers\DashboardController::class, 'reclamationStates']);
 });

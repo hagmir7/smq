@@ -56,7 +56,9 @@ class DashboardController extends Controller
      */
     public function lastReclamations()
     {
-        $reclamations = \App\Models\Reclamation::orderBy('created_at', 'desc')
+        $reclamations = \App\Models\Reclamation::with(['responsable', 'user'])
+            ->withcount('correctiveActions')
+            ->orderBy('created_at', 'desc')
             ->take(10)
             ->get();
 

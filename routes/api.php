@@ -85,6 +85,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
             Route::get('{reclamation}/corrective-actions', 'correctiveActions');
             Route::post('{reclamation}/corrective-actions', 'storeCorrectiveActions');
+            Route::post('{reclamation}/close', 'close');
         });
 
 

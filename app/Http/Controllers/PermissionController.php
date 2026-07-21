@@ -10,7 +10,38 @@ class PermissionController extends Controller
 {
     public function index()
     {
-        return response()->json(Permission::select('id', 'name')->get());
+        $permissions = Permission::select('id', 'name')->get()
+            ->map(function ($permission) {
+                $permission->category = $this->extractCategory($permission->name);
+                return $permission;
+            })
+            ->sortBy('category')
+            ->values();
+
+        return response()->json($permissions);
+    }
+
+    private function extractCategory(string $name): string
+    {
+        if (! str_contains($name, '.')) {
+            $resource = str_contains($name, '_connexions') ? 'connexion' : $name;
+            return $this->singularize($resource);
+        }
+
+        $resource = explode('.', $name, 2)[1];
+
+        return $this->singularize($resource);
+    }
+
+    private function singularize(string $resource): string
+    {
+        $words = explode('_', $resource);
+
+        $singular = array_map(function ($word) {
+            return str_ends_with($word, 's') ? rtrim($word, 's') : $word;
+        }, $words);
+
+        return implode('_', $singular);
     }
 
     public function store(Request $request)

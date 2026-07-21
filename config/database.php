@@ -113,7 +113,7 @@ return [
             // 'dateformat' => 'Y-m-d\TH:i:s.v'
             // 'dateformat' => 'ymd'
             // 'encrypt' => env('DB_ENCRYPT', 'yes'),
-            // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
+            'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'true'),
         ],
 
     ],

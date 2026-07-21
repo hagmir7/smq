@@ -94,7 +94,7 @@ class UserSeeder extends Seeder
                     'password' => Hash::make('password'),
                     'is_active' => true,
                     'service_id' => $service?->id,
-                    'company_id' => 1, // Change if needed
+                    'company_id' => 1,
                 ]
             );
 

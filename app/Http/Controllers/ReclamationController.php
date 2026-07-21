@@ -18,7 +18,11 @@ class ReclamationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Reclamation::query()->with('responsable', 'user');
+        $query = Reclamation::query()
+            ->with('responsable', 'user')
+            ->withCount(['correctiveActions as open_corrective_actions_count' => function ($q) {
+                $q->whereNull('completion_date');
+            }]);
 
         if ($request->filled('statut')) {
             $query->where('statut', $request->string('statut'));
@@ -28,21 +32,19 @@ class ReclamationController extends Controller
             $query->where('workflow_step', $request->integer('workflow_step'));
         }
 
-        // Free-text search across multiple columns
         if ($request->filled('search')) {
             $search = $request->string('search');
 
             $query->where(function ($q) use ($search) {
                 $q->where('claimant_name', 'like', "%{$search}%")
-                ->orWhere('client_code', 'like', "%{$search}%")
-                ->orWhere('client_phone', 'like', "%{$search}%")
-                ->orWhere('client_email', 'like', "%{$search}%")
-                ->orWhere('code', 'like', "%{$search}%")
-                ->orWhere('client_company_name', 'like', "%{$search}%");
+                    ->orWhere('client_code', 'like', "%{$search}%")
+                    ->orWhere('client_phone', 'like', "%{$search}%")
+                    ->orWhere('client_email', 'like', "%{$search}%")
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('client_company_name', 'like', "%{$search}%");
             });
         }
 
-        // Date range filter on claimant_date
         if ($request->filled('claimant_date_from')) {
             $query->whereDate('claimant_date', '>=', $request->date('claimant_date_from'));
         }
@@ -91,15 +93,17 @@ class ReclamationController extends Controller
 
         // Normalize French-formatted dates to Y-m-d before they hit Eloquent
         $validated['claimant_date'] = Carbon::createFromFormat('d/m/Y', $validated['claimant_date'])->format('Y-m-d');
+        $validated['workflow_step'] = 2;
 
         if (!empty($validated['received_at'])) {
             $validated['received_at'] = Carbon::createFromFormat('d/m/Y', $validated['received_at'])->format('Y-m-d');
+            
         }
 
         $reclamation = DB::transaction(function () use ($request, $validated) {
             $reclamation = Reclamation::create([
                 ...collect($validated)->except('attachments')->all(),
-                'code'          => $this->generateCode(),
+                'code'          => $this->generateCode('REC'),
                 'user_id'       => Auth::id(),
                 'statut'        => 'Ouverte',
                 'workflow_step' => 1,
@@ -182,7 +186,7 @@ class ReclamationController extends Controller
             'corrective_action' => $validated['corrective_action'] ?? null,
             'responsable_id'    => $validated['responsable_id'] ?? $reclamation->responsable_id,
             'statut'            => $validated['is_recevable'] ? 'En cours' : 'Clôturée',
-            'workflow_step'     => 2,
+            'workflow_step'     => 3,
             'closing_date'      => $validated['is_recevable'] ? null : now(),
             'registration_date'      => now(),
         ]);
@@ -251,7 +255,7 @@ class ReclamationController extends Controller
         ]);
     }
 
-       /**
+    /**
      * List corrective actions for a specific reclamation.
      */
     public function correctiveActions(Reclamation $reclamation): JsonResponse
@@ -265,7 +269,7 @@ class ReclamationController extends Controller
         return response()->json($actions);
     }
 
-    
+
     /**
      * Create a corrective action (linked to a reclamation).
      */
@@ -306,7 +310,8 @@ class ReclamationController extends Controller
 
         $reclamation->update([
             'closing_date' => $validated['closing_date'],
-            'status' => 'Clôturée', // Change to your status column/value
+            'status' => 'Clôturée',
+            'workflow_step' => 5,
         ]);
 
         return response()->json([
@@ -318,7 +323,9 @@ class ReclamationController extends Controller
 
 
 
-    
+
+
+
 
     public function destroy(Reclamation $reclamation): JsonResponse
     {
@@ -341,7 +348,7 @@ class ReclamationController extends Controller
     }
 
 
-      /**
+    /**
      * Generate the next unique numeric code (e.g. 1, 2, 3 ...).
      * Uses a lock to avoid race conditions under concurrent requests.
      */
@@ -360,18 +367,19 @@ class ReclamationController extends Controller
         });
     }
 
-    private function generateCode(): string
+    private function generateCode(string $prefix): string
     {
-        return DB::transaction(function () {
-            $lastCode = CorrectiveAction::lockForUpdate()
+        return DB::transaction(function () use ($prefix) {
+            $lastCode = Reclamation::where('code', 'like', $prefix . '%')  // was CorrectiveAction
+                ->lockForUpdate()
                 ->orderByDesc('id')
                 ->value('code');
 
             $lastNumber = $lastCode
-                ? (int) substr($lastCode, 2) // Remove "AC"
+                ? (int) substr($lastCode, strlen($prefix))
                 : 0;
 
-            return 'REC' . str_pad($lastNumber + 1, 5, '0', STR_PAD_LEFT);
+            return $prefix . str_pad($lastNumber + 1, 5, '0', STR_PAD_LEFT);
         });
     }
 }

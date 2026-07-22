@@ -88,7 +88,7 @@ class DashboardController extends Controller
         $closed = \App\Models\Reclamation::whereNotNull('closing_date')->count();
 
         $critical = \App\Models\Reclamation::whereNull('closing_date')
-            ->where('priority', 'critique') // adjust column/value to your schema
+            ->where('priority', 'critique')
             ->count();
 
         $inProgress = \App\Models\Reclamation::whereNull('closing_date')
@@ -102,6 +102,23 @@ class DashboardController extends Controller
             'Clôturées' => round(($closed / $total) * 100),
             'Critique' => round(($critical / $total) * 100),
             'En cours' => round(($inProgress / $total) * 100),
+        ]);
+    }
+
+
+
+
+    public function notifications()
+    {
+        $new_recalmations_count = \App\Models\Reclamation::whereNull('is_recevable')->count();
+
+        $validated_reclamation_count = \App\Models\Reclamation::whereNull('processing_analysis')
+            ->whereNotNull('is_recevable')
+            ->count();
+
+        return response()->json([
+            'new_recalmations_count' => $new_recalmations_count,
+            'validated_reclamation_count' => $validated_reclamation_count,
         ]);
     }
 }

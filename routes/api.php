@@ -146,4 +146,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('dashboard/reclamations-per-month', [App\Http\Controllers\DashboardController::class, 'reclamationsPerMonth']);
     Route::get('dashboard/last-reclamations', [App\Http\Controllers\DashboardController::class, 'lastReclamations']);
     Route::get('dashboard/reclamation-states', [App\Http\Controllers\DashboardController::class, 'reclamationStates']);
+    Route::get('dashboard/notifications', [App\Http\Controllers\DashboardController::class, 'notifications']);
 });

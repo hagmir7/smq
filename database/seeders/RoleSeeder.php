@@ -102,6 +102,15 @@ class RoleSeeder extends Seeder
             'supprimer.connexion',
             'tester.connexion',
 
+            'voir.processus',
+            'creer.processus',
+            'modifier.processus',
+            'supprimer.processus',
+
+
+
+            
+
             'voir.roles',
             'voir.role',
             'creer.role',

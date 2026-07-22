@@ -201,7 +201,7 @@
                     <td class="border border-black p-1 text-center">
                         {{ $action->completion_date ? \Carbon\Carbon::parse($action->completion_date)->format('d/m/Y') : '' }}
                     </td>
-                    <td class="border border-black p-1 text-center">{{ $action->code }}</td>
+                    <td class="border border-black p-1 text-center">{{ $action?->improvementSheets?->code }}</td>
                 </tr>
                 @empty
                 <tr>

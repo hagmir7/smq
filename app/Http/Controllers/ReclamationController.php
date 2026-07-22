@@ -389,7 +389,7 @@ class ReclamationController extends Controller
     public function download(Reclamation $reclamation)
     {
 
-        $reclamation->load('responsable', 'user', 'media', 'correctiveActions', 'correctiveActions.service', 'correctiveActions.responsable', 'correctiveActions.user', 'correctiveActions.parent', 'correctiveActions.children');
+        $reclamation->load('responsable', 'user', 'media', 'correctiveActions', 'correctiveActions.service', 'correctiveActions.responsable', 'correctiveActions.user', 'correctiveActions.parent', 'correctiveActions.children', 'correctiveActions.improvementSheets');
 
 
 

@@ -41,6 +41,7 @@ class RoleSeeder extends Seeder
             'cloturer.reclamation',
             'telecharger_pieces.reclamation',
             'reouvrir.reclamation',
+            'imprimer.reclamation',
 
             'voir.actions_correctives',
             'voir.action_corrective',
@@ -58,6 +59,18 @@ class RoleSeeder extends Seeder
             'modifier.fiche_amelioration',
             'supprimer.fiche_amelioration',
             'cloturer.fiche_amelioration',
+            'evaluer.fiche_amelioration',
+            'imprimer.fiche_amelioration',
+
+
+
+            'voir.action_ameliorations',
+            'voir.action_amelioration',
+            'creer.action_amelioration',
+            'modifier.action_amelioration',
+            'supprimer.action_amelioration',
+            'cloturer.action_amelioration',
+            'evaluer.action_amelioration',
 
             'voir.journal_amelioration',
             'creer.journal_amelioration',

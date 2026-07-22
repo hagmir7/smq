@@ -9,6 +9,8 @@ use App\Models\ImprovementSheetResponsible;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Spatie\LaravelPdf\Facades\Pdf;
+
 
 class ImprovementSheetController extends Controller
 {
@@ -281,5 +283,29 @@ class ImprovementSheetController extends Controller
 
             return 'AA-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
         });
+    }
+
+
+    public function download(ImprovementSheet $improvementSheet)
+    {
+
+        $improvementSheet = $improvementSheet->load(['correctiveAction', 'responsable', 'service', 'improvementActions']);
+
+        // return $improvementSheet;
+        return Pdf::view('pdf.improvement-sheet', [
+            'improvementSheet' => $improvementSheet,
+        ])
+            ->format('a4')
+            // ->landscape()
+            ->footerHtml('
+                <div style="
+                    font-size:15px;
+                    text-align:center;
+                    width:100%;
+                    color:#555;
+                ">
+                    © Ce document ne doit être ni reproduit ni communiqué sans l’autorisation d’INTERCOCINA
+                </div>
+            ')->name(now()->format('Ymd_His') . '-improvementSheet.pdf');
     }
 }

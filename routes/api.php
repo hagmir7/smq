@@ -79,6 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
             Route::put('{reclamation}', 'update');
             Route::delete('{reclamation}', 'destroy');
+            Route::get('{reclamation}/download', 'download');
 
             Route::post('{reclamation}/attachments', 'storeAttachments');
             Route::delete('{reclamation}/attachments/{mediaId}', 'destroyAttachment');
@@ -110,6 +111,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('{improvementSheet}/improvement-actions', [ImprovementSheetController::class, 'improvementActionsStore']);
 
         Route::get('{improvementSheet}/responsibles', [ImprovementSheetController::class, 'responsibles']);
+        Route::get('{improvementSheet}/download', [ImprovementSheetController::class, 'download']);
         Route::post('{improvementSheet}/responsibles', [ImprovementSheetController::class, 'responsiblesStore']);
     });
 

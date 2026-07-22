@@ -10,6 +10,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Spatie\LaravelPdf\Facades\Pdf;
+
 
 class ReclamationController extends Controller
 {
@@ -381,5 +383,30 @@ class ReclamationController extends Controller
 
             return $prefix . str_pad($lastNumber + 1, 5, '0', STR_PAD_LEFT);
         });
+    }
+
+
+    public function download(Reclamation $reclamation)
+    {
+
+        $reclamation->load('responsable', 'user', 'media', 'correctiveActions', 'correctiveActions.service', 'correctiveActions.responsable', 'correctiveActions.user', 'correctiveActions.parent', 'correctiveActions.children');
+
+
+
+        return Pdf::view('pdf.reclamation', [
+            'reclamation' => $reclamation,
+        ])
+            ->format('a4')
+            // ->landscape()
+            ->footerHtml('
+                <div style="
+                    font-size:15px;
+                    text-align:center;
+                    width:100%;
+                    color:#555;
+                ">
+                    © Ce document ne doit être ni reproduit ni communiqué sans l’autorisation d’INTERCOCINA
+                </div>
+            ')->name(now()->format('Ymd_His') . '-reclamation.pdf');
     }
 }

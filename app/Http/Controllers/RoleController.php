@@ -27,9 +27,24 @@ class RoleController extends Controller
         return null;
     }
 
+    /**
+     * List all roles, including the label and permission count the
+     * frontend sidebar needs.
+     */
     public function index()
     {
-        return response()->json(Role::all());
+        $roles = Role::withCount('permissions')
+            ->orderBy('name')
+            ->get()
+            ->map(function ($role) {
+                return [
+                    'name'  => $role->name,
+                    'label' => $role->label,
+                    'permissions' => array_fill(0, $role->permissions_count, null),
+                ];
+            });
+
+        return response()->json(['data' => $roles]);
     }
 
     public function store(Request $request)
@@ -39,18 +54,24 @@ class RoleController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|unique:roles',
+            'name'  => 'required|string|unique:roles',
+            'label' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'message' => $validator->errors()->first(),
                 'errors' => $validator->errors()
-            ], 203);
+            ], 422);
         }
 
-        $role = Role::create(['name' => $request->name, 'guard_name' => "web"]);
-        return response()->json($role);
+        $role = Role::create([
+            'name'       => $request->name,
+            'label'      => $request->label ?? $request->name,
+            'guard_name' => 'web',
+        ]);
+
+        return response()->json(['data' => $role]);
     }
 
     public function show($roleName)
@@ -59,13 +80,19 @@ class RoleController extends Controller
             $role = Role::findByName($roleName, 'web');
             $permissions = $role->permissions->map(function ($perm) {
                 return [
-                    'id' => $perm->id,
-                    'name' => $perm->name
+                    'id'   => $perm->id,
+                    'name' => $perm->name,
+                    'description'    => $perm->description,
+                    'category'       => $perm->category,
+                    'category_label' => $perm->category_label,
                 ];
             });
             return response()->json([
-                'role' => $role->name,
-                'permissions' => $permissions
+                'data' => [
+                    'role'        => $role->name,
+                    'label'       => $role->label,
+                    'permissions' => $permissions,
+                ],
             ]);
         } catch (\Spatie\Permission\Exceptions\RoleDoesNotExist $e) {
             return response()->json([
@@ -80,7 +107,7 @@ class RoleController extends Controller
             return $response;
         }
 
-        $role = Role::where('name',$roleName)->first();
+        $role = Role::where('name', $roleName)->first();
 
         if (!$role) {
             return response()->json([
@@ -89,19 +116,23 @@ class RoleController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|unique:roles,name,' . $role->id,
+            'name'  => 'required|string|unique:roles,name,' . $role->id,
+            'label' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'message' => $validator->errors()->first(),
                 'errors' => $validator->errors()
-            ], 203);
+            ], 422);
         }
 
-        $role->update(['name' => $request->name]);
+        $role->update([
+            'name'  => $request->name,
+            'label' => $request->label ?? $role->label,
+        ]);
 
-        return response()->json($role);
+        return response()->json(['data' => $role]);
     }
 
     public function destroy($roleName)
@@ -114,7 +145,6 @@ class RoleController extends Controller
 
         if (!$role) {
             return response()->json([
-
                 'message' => 'Role not found.'
             ], 404);
         }
@@ -141,8 +171,8 @@ class RoleController extends Controller
             ->select('id AS value', 'full_name AS label')->get();
     }
 
-        /**
-     * Assign one or more permissions to a role.
+    /**
+     * Assign one or more permissions to a role (additive).
      * body: { "permissions": ["edit posts", "delete posts"] }
      */
     public function assignPermissions(Request $request, $roleName)
@@ -181,6 +211,8 @@ class RoleController extends Controller
 
     /**
      * Replace ALL permissions on a role with the given list.
+     * This is what the frontend "Enregistrer" button calls via
+     * PUT roles/{name}/permissions.
      * body: { "permissions": ["edit posts", "delete posts"] }
      */
     public function syncPermissions(Request $request, $roleName)
@@ -221,11 +253,11 @@ class RoleController extends Controller
      * Remove one or more permissions from a role.
      * body: { "permissions": ["edit posts"] }
      */
-    public function revokePermissions(Request $request, $roleId)
+    public function revokePermissions(Request $request, $roleName)
     {
         abort_unless(auth()->user()->hasRole('admin'), 403, "Vous n'êtes pas autorisé");
 
-        $role = Role::find($roleId);
+        $role = Role::where('name', $roleName)->first();
 
         if (!$role) {
             return response()->json([

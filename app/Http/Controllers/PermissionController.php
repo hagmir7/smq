@@ -8,17 +8,40 @@ use Spatie\Permission\Models\Permission;
 
 class PermissionController extends Controller
 {
+    /**
+     * French display labels for each derived category key.
+     * Falls back to a capitalized version of the key if not listed here.
+     */
+    private const CATEGORY_LABELS = [
+        'reclamation'          => 'Réclamations',
+        'action_corrective'    => 'Actions Correctives',
+        'fiche_amelioration'   => "Fiches d'Amélioration",
+        'action_amelioration'  => "Actions d'Amélioration",
+        'journal_amelioration' => "Journal d'Amélioration",
+        'registre_reclamation' => 'Registre des Réclamations',
+        'utilisateur'          => 'Utilisateurs',
+        'connexion'            => 'Connexions',
+        'processus'            => 'Processus',
+        'role'                 => 'Rôles',
+    ];
+
     public function index()
     {
         $permissions = Permission::select('id', 'name')->get()
             ->map(function ($permission) {
-                $permission->category = $this->extractCategory($permission->name);
-                return $permission;
+                $category = $this->extractCategory($permission->name);
+
+                return [
+                    'id'             => $permission->id,
+                    'name'           => $permission->name,
+                    'category'       => $category,
+                    'category_label' => self::CATEGORY_LABELS[$category] ?? ucfirst(str_replace('_', ' ', $category)),
+                ];
             })
-            ->sortBy('category')
+            ->sortBy('category_label')
             ->values();
 
-        return response()->json($permissions);
+        return response()->json(['data' => $permissions]);
     }
 
     private function extractCategory(string $name): string
@@ -74,7 +97,7 @@ class PermissionController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $created->count() === 1 ? $created->first() : $created
+            'data' => $created->count() === 1 ? $created->first() : $created->values()
         ], 201);
     }
 
@@ -155,7 +178,9 @@ class PermissionController extends Controller
             ], 404);
         }
 
-        return response()->json($permission->users()->select('users.id', 'users.full_name', 'users.email')->get());
+        return response()->json([
+            'data' => $permission->users()->select('users.id', 'users.full_name', 'users.email')->get(),
+        ]);
     }
 
     /**
@@ -172,6 +197,8 @@ class PermissionController extends Controller
             ], 404);
         }
 
-        return response()->json($permission->roles()->select('roles.id', 'roles.name')->get());
+        return response()->json([
+            'data' => $permission->roles()->select('roles.id', 'roles.name')->get(),
+        ]);
     }
 }

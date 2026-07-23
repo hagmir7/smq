@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\CorrectiveAction;
 use App\Models\Reclamation;
+use App\Notifications\CorrectiveActionCreated;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -150,13 +151,19 @@ class CorrectiveActionController extends Controller
      */
     public function storeChild(Request $request, CorrectiveAction $correctiveAction): JsonResponse
     {
+        if ($correctiveAction?->parent_id) {
+            return response()->json([
+                'message' => 'Impossible de créer une action de suivi à partir d\'une action de suivi.',
+            ], 422);
+        }
+
         $validated = $request->validate([
-            'description'             => ['required', 'string'],
-            'type'                    => ['nullable', 'string', 'max:30'],
-            'effectiveness_criteria'  => ['nullable', 'string', 'max:500'],
-            'due_date'                => ['nullable', 'date'],
-            'service_id'              => ['nullable', 'exists:services,id'],
-            'responsable_id'          => ['nullable', 'exists:users,id'],
+            'description'            => ['required', 'string'],
+            'type'                   => ['nullable', 'string', 'max:30'],
+            'effectiveness_criteria' => ['nullable', 'string', 'max:500'],
+            'due_date'               => ['nullable', 'date'],
+            'service_id'             => ['nullable', 'exists:services,id'],
+            'responsable_id'         => ['nullable', 'exists:users,id'],
         ]);
 
         $child = CorrectiveAction::create([
@@ -166,14 +173,14 @@ class CorrectiveActionController extends Controller
             'reclamation_id' => $correctiveAction->reclamation_id,
             'parent_id'      => $correctiveAction->id,
             'user_id'        => Auth::id(),
-            'status'              => $validated['responsable_id'] ? 'Affectée' : 'Créée'
+            'status'         => !empty($validated['responsable_id']) ? 'Affectée' : 'Créée',
         ]);
 
         $correctiveAction->update([
-            'status'  => 'En cours'
+            'status' => 'En cours',
         ]);
 
-
+        $correctiveAction->responsable->notify(new CorrectiveActionCreated($correctiveAction));
 
         return response()->json([
             'message' => 'Action corrective de suivi créée.',

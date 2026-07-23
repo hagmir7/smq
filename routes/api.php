@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ImprovementJournalController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ConnectionController;
@@ -67,27 +68,28 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     // Reclamation
-    Route::prefix('reclamations')
-        ->controller(ReclamationController::class)
-        ->group(function () {
-            Route::get('/', 'index');
-            Route::get('{reclamation}', 'show');
+   Route::prefix('reclamations')
+    ->controller(ReclamationController::class)
+    ->group(function () {
+        Route::get('user', 'userReclamations');
+        Route::get('/', 'index');
+        Route::post('/', 'storeStepOne');
 
-            Route::post('/', 'storeStepOne');
-            Route::post('{reclamation}/step-2', 'storeStepTwo');
-            Route::post('{reclamation}/step-3', 'storeStepThree');
+        Route::get('{reclamation}', 'show')->whereNumber('reclamation');
+        Route::put('{reclamation}', 'update')->whereNumber('reclamation');
+        Route::delete('{reclamation}', 'destroy')->whereNumber('reclamation');
+        Route::get('{reclamation}/download', 'download')->whereNumber('reclamation');
 
-            Route::put('{reclamation}', 'update');
-            Route::delete('{reclamation}', 'destroy');
-            Route::get('{reclamation}/download', 'download');
+        Route::post('{reclamation}/step-2', 'storeStepTwo')->whereNumber('reclamation');
+        Route::post('{reclamation}/step-3', 'storeStepThree')->whereNumber('reclamation');
 
-            Route::post('{reclamation}/attachments', 'storeAttachments');
-            Route::delete('{reclamation}/attachments/{mediaId}', 'destroyAttachment');
+        Route::post('{reclamation}/attachments', 'storeAttachments')->whereNumber('reclamation');
+        Route::delete('{reclamation}/attachments/{mediaId}', 'destroyAttachment')->whereNumber('reclamation');
 
-            Route::get('{reclamation}/corrective-actions', 'correctiveActions');
-            Route::post('{reclamation}/corrective-actions', 'storeCorrectiveActions');
-            Route::post('{reclamation}/close', 'close');
-        });
+        Route::get('{reclamation}/corrective-actions', 'correctiveActions')->whereNumber('reclamation');
+        Route::post('{reclamation}/corrective-actions', 'storeCorrectiveActions')->whereNumber('reclamation');
+        Route::post('{reclamation}/close', 'close')->whereNumber('reclamation');
+    });
 
 
 
@@ -142,9 +144,25 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-    Route::get('dashboard/states', [App\Http\Controllers\DashboardController::class, 'states']);
-    Route::get('dashboard/reclamations-per-month', [App\Http\Controllers\DashboardController::class, 'reclamationsPerMonth']);
-    Route::get('dashboard/last-reclamations', [App\Http\Controllers\DashboardController::class, 'lastReclamations']);
-    Route::get('dashboard/reclamation-states', [App\Http\Controllers\DashboardController::class, 'reclamationStates']);
-    Route::get('dashboard/notifications', [App\Http\Controllers\DashboardController::class, 'notifications']);
+
+     Route::prefix('notifications')->group(function () {
+        Route::get('/', [NotificationController::class, 'index']);
+            Route::get('/unread', [NotificationController::class, 'unread']);
+            Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
+            Route::get('/{id}', [NotificationController::class, 'show']);
+            Route::patch('/{id}/read', [NotificationController::class, 'markAsRead']);
+            Route::patch('/{id}/unread', [NotificationController::class, 'markAsUnread']);
+            Route::patch('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+            Route::delete('/read', [NotificationController::class, 'destroyRead']);
+            Route::delete('/{id}', [NotificationController::class, 'destroy']);
+            Route::delete('/', [NotificationController::class, 'destroyAll']);
+    });
+
+    Route::prefix('dashboard')->group(function () {
+        Route::get('states', [App\Http\Controllers\DashboardController::class, 'states']);
+        Route::get('reclamations-per-month', [App\Http\Controllers\DashboardController::class, 'reclamationsPerMonth']);
+        Route::get('last-reclamations', [App\Http\Controllers\DashboardController::class, 'lastReclamations']);
+        Route::get('reclamation-states', [App\Http\Controllers\DashboardController::class, 'reclamationStates']);
+        Route::get('notifications', [App\Http\Controllers\DashboardController::class, 'notifications']);
+    });
 });

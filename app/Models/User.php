@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -57,13 +58,10 @@ class User extends Authenticatable
         return $response;
     }
 
-
-
     public function company()
     {
         return $this->belongsTo(Company::class);
     }
-
 
     public function service()
     {
@@ -73,5 +71,41 @@ class User extends Authenticatable
     public function responsibleForServices()
     {
         return $this->hasMany(ImprovementSheetResponsible::class, 'responsable_id');
+    }
+
+    /**
+     * Corrective actions this user is responsible for carrying out.
+     */
+    public function correctiveActions()
+    {
+        return $this->hasMany(CorrectiveAction::class, 'responsable_id');
+    }
+
+    /**
+     * Corrective actions created by this user.
+     */
+    public function createdCorrectiveActions()
+    {
+        return $this->hasMany(CorrectiveAction::class, 'user_id');
+    }
+
+    /**
+     * Override to use our custom Notification model instead of
+     * Laravel's default Illuminate\Notifications\DatabaseNotification.
+     */
+    public function notifications(): MorphMany
+    {
+        return $this->morphMany(Notification::class, 'notifiable')
+            ->orderBy('created_at', 'desc');
+    }
+
+    public function unreadNotifications(): MorphMany
+    {
+        return $this->notifications()->whereNull('read_at');
+    }
+
+    public function readNotifications(): MorphMany
+    {
+        return $this->notifications()->whereNotNull('read_at');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CorrectiveAction;
 use App\Models\Reclamation;
+use App\Notifications\CorrectiveActionCreated;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -55,6 +56,12 @@ class ReclamationController extends Controller
             $query->whereDate('claimant_date', '<=', $request->date('claimant_date_to'));
         }
 
+        if (auth()->user()->hasRole('pilote')) {
+            $query = Reclamation::whereHas('correctiveActions', function ($query) {
+                $query->where('responsable_id', auth()->id());
+            });
+        }
+
         $reclamations = $query->latest()->paginate($request->integer('per_page', 15));
 
         return response()->json($reclamations);
@@ -99,7 +106,6 @@ class ReclamationController extends Controller
 
         if (!empty($validated['received_at'])) {
             $validated['received_at'] = Carbon::createFromFormat('d/m/Y', $validated['received_at'])->format('Y-m-d');
-            
         }
 
         $reclamation = DB::transaction(function () use ($request, $validated) {
@@ -298,6 +304,8 @@ class ReclamationController extends Controller
             ]);
         });
 
+        $correctiveAction->responsable->notify(new CorrectiveActionCreated($correctiveAction));
+
         return response()->json([
             'message' => 'Action corrective créée avec succès.',
             'data'    => $correctiveAction->load(['service', 'responsable', 'user', 'parent']),
@@ -408,5 +416,18 @@ class ReclamationController extends Controller
                     © Ce document ne doit être ni reproduit ni communiqué sans l’autorisation d’INTERCOCINA
                 </div>
             ')->name(now()->format('Ymd_His') . '-reclamation.pdf');
+    }
+
+    public function userReclamations(Request $request)
+    {
+        $reclamations = Reclamation::whereHas('correctiveActions', function ($query) {
+            $query->where('responsable_id', auth()->id());
+        })
+            ->with(['correctiveActions' => function ($query) {
+                $query->where('responsable_id', auth()->id());
+            }])
+            ->get();
+
+        return response()->json($reclamations);
     }
 }

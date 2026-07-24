@@ -145,17 +145,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-     Route::prefix('notifications')->group(function () {
+    Route::prefix('notifications')->group(function () {
         Route::get('/', [NotificationController::class, 'index']);
-            Route::get('/unread', [NotificationController::class, 'unread']);
-            Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
-            Route::get('/{id}', [NotificationController::class, 'show']);
-            Route::patch('/{id}/read', [NotificationController::class, 'markAsRead']);
-            Route::patch('/{id}/unread', [NotificationController::class, 'markAsUnread']);
-            Route::patch('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
-            Route::delete('/read', [NotificationController::class, 'destroyRead']);
-            Route::delete('/{id}', [NotificationController::class, 'destroy']);
-            Route::delete('/', [NotificationController::class, 'destroyAll']);
+        Route::get('/unread', [NotificationController::class, 'unread']);
+        Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
+        Route::get('/{id}', [NotificationController::class, 'show']);
+        Route::patch('/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::patch('/{id}/unread', [NotificationController::class, 'markAsUnread']);
+        Route::patch('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+        Route::delete('/read', [NotificationController::class, 'destroyRead']);
+        Route::delete('/{id}', [NotificationController::class, 'destroy']);
+        Route::delete('/', [NotificationController::class, 'destroyAll']);
     });
 
     Route::prefix('dashboard')->group(function () {

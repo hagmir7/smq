@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\CorrectiveAction;
 use App\Models\Reclamation;
+use App\Models\User;
 use App\Notifications\CorrectiveActionCreated;
+use App\Notifications\ReclamationCreated;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -124,6 +126,12 @@ class ReclamationController extends Controller
                         ->usingFileName($file->getClientOriginalName())
                         ->toMediaCollection('attachments');
                 }
+            }
+
+            $smqUsers = User::role('smq')->get();
+
+            foreach ($smqUsers as $user) {
+                $user->notify(new ReclamationCreated($reclamation));
             }
 
             return $reclamation;
@@ -370,7 +378,7 @@ class ReclamationController extends Controller
                 ->value('code');
 
             $lastNumber = $lastCode
-                ? (int) substr($lastCode, 2) // Remove "AC"
+                ? (int) substr($lastCode, 2)
                 : 0;
 
             return 'AC' . str_pad($lastNumber + 1, 5, '0', STR_PAD_LEFT);

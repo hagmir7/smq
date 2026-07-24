@@ -13,14 +13,14 @@ class CorrectiveActionCreated extends Notification
     use Queueable;
 
     /**
-     * Create a new notification instance.
+     * Crée une nouvelle instance de notification.
      */
     public function __construct(public CorrectiveAction $correctiveAction)
     {
     }
 
     /**
-     * Get the notification's delivery channels.
+     * Détermine les canaux de diffusion de la notification.
      *
      * @return array<int, string>
      */
@@ -30,23 +30,23 @@ class CorrectiveActionCreated extends Notification
     }
 
     /**
-     * Get the mail representation of the notification.
+     * Représentation de la notification par e-mail.
      */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("New Corrective Action Assigned: {$this->correctiveAction->code}")
-            ->greeting("Hi {$notifiable->name},")
-            ->line("A new corrective action has been assigned to you.")
-            ->line("Code: {$this->correctiveAction->code}")
-            ->line("Description: {$this->correctiveAction->description}")
-            ->line("Due date: {$this->correctiveAction->due_date?->format('Y-m-d')}")
-            ->action('View Corrective Action', url("/corrective-actions/{$this->correctiveAction->id}"))
-            ->line('Please review and take the necessary steps.');
+            ->subject("Nouvelle action corrective assignée : {$this->correctiveAction->code}")
+            ->greeting("Bonjour {$notifiable->name},")
+            ->line("Une nouvelle action corrective vous a été assignée.")
+            ->line("Code : {$this->correctiveAction->code}")
+            ->line("Description : {$this->correctiveAction->description}")
+            ->line("Date d'échéance : {$this->correctiveAction->due_date?->format('d/m/Y')}")
+            ->action('Voir l’action corrective', url("/corrective-actions/{$this->correctiveAction->id}"))
+            ->line("Merci de la consulter et de prendre les mesures nécessaires.");
     }
 
     /**
-     * Get the array representation of the notification.
+     * Représentation de la notification sous forme de tableau.
      *
      * @return array<string, mixed>
      */
@@ -59,12 +59,12 @@ class CorrectiveActionCreated extends Notification
             'due_date'             => $this->correctiveAction->due_date?->format('Y-m-d'),
             'service_id'           => $this->correctiveAction->service_id,
             'reclamation_id'       => $this->correctiveAction->reclamation_id,
-            'message'              => "You have been assigned a new corrective action: {$this->correctiveAction->code}.",
+            'message'              => "Une nouvelle action corrective vous a été assignée : {$this->correctiveAction->code}.",
         ];
     }
 
     /**
-     * Optional: customize the database payload separately from the array representation.
+     * Personnalise le contenu enregistré en base de données.
      */
     public function toDatabase(object $notifiable): array
     {

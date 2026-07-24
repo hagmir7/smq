@@ -106,7 +106,7 @@ class DashboardController extends Controller
     }
 
 
-  
+
 
 
 
@@ -119,9 +119,15 @@ class DashboardController extends Controller
             ->whereNotNull('is_recevable')
             ->count();
 
+
+        $new_corrective_action = \App\Models\CorrectiveAction::whereNull('completion_date')
+            ->where('responsable_id', auth()->id())
+            ->count();
+
         return response()->json([
             'new_recalmations_count' => $new_recalmations_count,
             'validated_reclamation_count' => $validated_reclamation_count,
+            'new_corrective_action' => $new_corrective_action
         ]);
     }
 }

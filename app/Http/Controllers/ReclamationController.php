@@ -407,13 +407,10 @@ class ReclamationController extends Controller
 
         $reclamation->load('responsable', 'user', 'media', 'correctiveActions', 'correctiveActions.service', 'correctiveActions.responsable', 'correctiveActions.user', 'correctiveActions.parent', 'correctiveActions.children', 'correctiveActions.improvementSheets');
 
-
-
         return Pdf::view('pdf.reclamation', [
             'reclamation' => $reclamation,
         ])
             ->format('a4')
-            // ->landscape()
             ->footerHtml('
                 <div style="
                     font-size:15px;

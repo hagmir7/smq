@@ -27,12 +27,14 @@ class CorrectiveAction extends Model
         'responsable_id',
         'user_id',
         'parent_id',
-        'status'
+        'status',
+        'closing_date',
     ];
 
     protected $casts = [
         'due_date' => 'date',
         'completion_date' => 'date',
+        'closing_date' => 'date',
     ];
 
     public function reclamation(): BelongsTo

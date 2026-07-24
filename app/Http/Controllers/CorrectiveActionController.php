@@ -78,6 +78,11 @@ class CorrectiveActionController extends Controller
         }
 
         $query->whereNull('parent_id');
+
+        if(auth()->user()->hasRole("pilote")){
+            $query->where("responsable_id", auth()->user()->id);
+        }
+        
         $actions = $query->latest()->paginate($request->integer('per_page', 15));
 
         return response()->json($actions);
@@ -106,6 +111,7 @@ class CorrectiveActionController extends Controller
             'type'                    => ['sometimes', 'string', 'max:30'],
             'effectiveness_criteria'  => ['sometimes', 'nullable', 'string', 'max:500'],
             'due_date'                => ['sometimes', 'nullable', 'date'],
+            'completion_date'         => ['sometimes', 'nullable', 'date'],
             'service_id'              => ['sometimes', 'nullable', 'exists:services,id'],
             'responsable_id'          => ['sometimes', 'nullable', 'exists:users,id'],
             'parent_id'               => ['sometimes', 'nullable', 'exists:corrective_actions,id'],
@@ -132,7 +138,7 @@ class CorrectiveActionController extends Controller
     public function complete(Request $request, CorrectiveAction $correctiveAction): JsonResponse
     {
         $validated = $request->validate([
-            'completion_date' => ['required', 'date'],
+            'closing_date' => ['required', 'date'],
             'effectiveness'   => ['required', 'string', 'in:Efficace,Partiellement efficace,Non efficace'],
         ]);
 

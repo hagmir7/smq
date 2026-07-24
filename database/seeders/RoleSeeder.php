@@ -72,6 +72,10 @@ class RoleSeeder extends Seeder
             'cloturer.action_corrective'     => 'action_corrective',
             'reouvrir.action_corrective'     => 'action_corrective',
 
+            'voir.sous-action_corrective'   => 'action_corrective',
+            'creer.sous-action_corrective'  => 'action_corrective',
+            'modifier.sous-action_corrective'  => 'action_corrective',
+
             // Fiches d'Amélioration
             'voir.fiches_amelioration'       => 'fiche_amelioration',
             'voir.fiche_amelioration'        => 'fiche_amelioration',

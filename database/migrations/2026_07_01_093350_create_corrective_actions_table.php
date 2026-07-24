@@ -27,6 +27,7 @@ return new class extends Migration
 
             $table->string('effectiveness', 20)->nullable(); // Efficacité
             $table->foreignIdFor(Reclamation::class)->constrained()->cascadeOnDelete();
+            $table->date('closing_date')->nullable();
 
             $table->foreignIdFor(Service::class)
                 ->nullable()

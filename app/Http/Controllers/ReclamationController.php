@@ -196,14 +196,15 @@ class ReclamationController extends Controller
             'responsable_id'    => ['nullable', 'exists:users,id'],
         ]);
 
+       
         $reclamation->update([
             'post_analysis'     => $validated['post_analysis'],
-            'is_recevable'      => $validated['is_recevable'],
+            'is_recevable'      => intval($validated['is_recevable']),
             'corrective_action' => $validated['corrective_action'] ?? null,
             'responsable_id'    => $validated['responsable_id'] ?? $reclamation->responsable_id,
-            'statut'            => $validated['is_recevable'] ? 'En cours' : 'Clôturée',
-            'workflow_step'     => 3,
-            'closing_date'      => $validated['is_recevable'] ? null : now(),
+            'statut'            => intval($validated['is_recevable']) == 1 ? 'En cours' : 'Clôturée',
+            'workflow_step'     => 2,
+            'closing_date'      => intval($validated['is_recevable']) == 1 ? null : now(),
             'registration_date'      => now(),
         ]);
 
@@ -232,7 +233,6 @@ class ReclamationController extends Controller
             'cause_analysis'        => ['nullable', 'string'],
             'priority'              => ['nullable', 'string', 'max:20'],
             'planned_closing_date'  => ['nullable', 'date'],
-            'closing_date'          => ['nullable', 'date'],
         ]);
 
         $reclamation->update([
@@ -241,7 +241,6 @@ class ReclamationController extends Controller
             'cause_analysis'       => $validated['cause_analysis'] ?? null,
             'priority'             => $validated['priority'] ?? $reclamation->priority,
             'planned_closing_date' => $validated['planned_closing_date'] ?? null,
-            'closing_date'         => $validated['closing_date'] ?? now(),
             'statut'               => 'Clôturée',
             'workflow_step'        => 3,
         ]);

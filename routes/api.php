@@ -95,11 +95,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::prefix('corrective-actions')->group(function () {
         Route::get('/', [CorrectiveActionController::class, 'index']);
+        Route::get('list', [CorrectiveActionController::class, 'list']);
         Route::get('{correctiveAction}', [CorrectiveActionController::class, 'show']);
         Route::put('{correctiveAction}', [CorrectiveActionController::class, 'update']);
         Route::patch('{correctiveAction}/complete', [CorrectiveActionController::class, 'complete']);
         Route::post('{correctiveAction}/children', [CorrectiveActionController::class, 'storeChild']);
         Route::delete('{correctiveAction}', [CorrectiveActionController::class, 'destroy']);
+       
     });
 
     Route::prefix('improvement-sheets')->group(function () {

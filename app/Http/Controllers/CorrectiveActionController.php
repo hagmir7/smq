@@ -219,4 +219,21 @@ class CorrectiveActionController extends Controller
             return 'AC' . str_pad($lastNumber + 1, 5, '0', STR_PAD_LEFT);
         });
     }
+
+
+    public function list(Request $request): JsonResponse
+    {
+        $query = CorrectiveAction::query();
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        return response()->json(
+            $query->select('id', 'code', 'description')->limit(20)->latest()->get(),
+        );
+    }
 }

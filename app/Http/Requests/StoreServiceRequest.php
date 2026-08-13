@@ -11,7 +11,7 @@ class StoreServiceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // Adjust according to your authorization logic (policies/gates)
+        return true; 
     }
 
     /**
@@ -21,6 +21,7 @@ class StoreServiceRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'responsible_id' => ['required', 'integer', 'exists:users,id'],
         ];
@@ -32,9 +33,10 @@ class StoreServiceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'The service name is required.',
-            'responsible_id.required' => 'A responsible user must be assigned.',
-            'responsible_id.exists' => 'The selected responsible user does not exist.',
+            'name.required' => 'Le nom du service est obligatoire.',
+            'code.required' => 'La référence PRS est obligatoire.',
+            'responsible_id.required' => 'Un responsable doit être affecté.',
+            'responsible_id.exists' => 'Le responsable sélectionné n’existe pas.',
         ];
     }
 }

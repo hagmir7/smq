@@ -48,32 +48,32 @@
 {{-- I. PARTIE A REMPLIR PAR LE RECLAMANT                    --}}
 {{-- ═══════════════════════════════════════════════════════ --}}
 @php
-    $objetGauche = [
-        'Dimensions non conformes au commande (largueur ; longueur, épaisseur)',
-        'Perçage du produit non conforme',
-        'Commande incomplet',
-        'Mauvaise qualité des matériaux',
-        'Finition défectueuse (rayures, peinture,)',
-        'Problème de montage / assemblage',
-        'Erreur de modèle ou de référence',
-        'Non-respect des spécifications techniques',
-    ];
-    $objetDroite = [
-        'Retard de livraison',
-        'Produit endommagé à la réception',
-        "Non-conformité esthétique (couleur, ...)",
-        "Problème d'emballage",
-        'Etiquette de produit',
-        'Accessoires manquants',
-        'Service client insatisfaisant',
-    ];
-    // The recorded object doesn't map to one of the predefined checkboxes,
-    // so it is reported under "Autre".
-    $objetPredefini = collect(array_merge($objetGauche, $objetDroite))
-        ->first(fn($label) => str_contains(mb_strtolower($label), mb_strtolower($reclamation->object ?? '__none__')));
+$objetGauche = [
+    'Dimensions non conformes au commande (largueur ; longueur, épaisseur)',
+    'Perçage du produit non conforme',
+    'Commande incomplet',
+    'Mauvaise qualité des matériaux',
+    'Finition défectueuse (rayures, peinture,)',
+    'Problème de montage / assemblage',
+    'Erreur de modèle ou de référence',
+    'Non-respect des spécifications techniques',
+];
+$objetDroite = [
+    'Retard de livraison',
+    'Produit endommagé à la réception',
+    "Non-conformité esthétique (couleur, ...)",
+    "Problème d'emballage",
+    'Etiquette de produit',
+    'Accessoires manquants',
+    'Service client insatisfaisant',
+];
+// The recorded object doesn't map to one of the predefined checkboxes,
+// so it is reported under "Autre".
+$objetPredefini = collect(array_merge($objetGauche, $objetDroite))
+    ->first(fn($label) => str_contains(mb_strtolower($label), mb_strtolower($reclamation->object ?? '__none__')));
 @endphp
 
-<p class="italic font-bold text-[11pt] mb-2">I PARTIE A REMPLIR PAR LE RECLAMANT</p>
+<p class="italic font-bold text-[11pt] mb-2">I PARTIE A REMPLIR PAR LE SMQ</p>
 
 <p class="font-bold mb-1">
     Date de la réclamation ou de la suggestion :
@@ -106,24 +106,16 @@
     <tr>
         <td class="border border-black p-2 align-top w-1/2">
             <p class="font-bold mb-1">Objet de la réclamation :</p>
-            @foreach($objetGauche as $item)
-                <p class="mb-0.5">{{ $objetPredefini === $item ? '☑' : '☐' }} {{ $item }}</p>
-            @endforeach
+            {{$reclamation->object}}
         </td>
-        <td class="border border-black p-2 align-top w-1/2">
-            <p class="mb-1">&nbsp;</p>
-            @foreach($objetDroite as $item)
-                <p class="mb-0.5">{{ $objetPredefini === $item ? '☑' : '☐' }} {{ $item }}</p>
-            @endforeach
-            <p class="mb-0.5">
-                {{ !$objetPredefini ? '☑' : '☐' }} Autre :
-                {{ !$objetPredefini ? $reclamation->object : '..................' }}
-            </p>
-        </td>
+
     </tr>
     <tr>
-        <td class="border border-black p-2 font-bold align-top">Décrire la réclamation /suggestion :</td>
-        <td class="border border-black p-2 align-top">{{ $reclamation->description }}</td>
+        <td class="border border-black p-2 font-bold align-top">
+            <strong> Décrire la réclamation /suggestion :</strong><br>
+            {{ $reclamation->description }}
+        </td>
+
     </tr>
 </table>
 
@@ -135,7 +127,7 @@
     {{ $reclamation->is_recevable === false ? 'non ☑' : 'non ☐' }}
 </p>
 <p class="font-bold mb-1">
-    Remis le :
+    Enregistré le :
     {{ $reclamation->registration_date ? \Carbon\Carbon::parse($reclamation->registration_date)->format('d/m/Y') : '...........................................' }}
 </p>
 <p class="mb-4"><strong>Visa du Directeur :</strong></p>
@@ -218,19 +210,6 @@
                 {{ optional($reclamation->correctiveActions->first())->completion_date ? \Carbon\Carbon::parse($reclamation->correctiveActions->first()->completion_date)->format('d/m/Y') : '...../...../...............' }}
                 - Signature du Responsable :
             </p>
-        </td>
-    </tr>
-</table>
-
-<table class="w-full border-collapse border border-black mb-3">
-    <tr>
-        <td class="border border-black p-1.5 font-bold">3) Réponse au client en cas de réclamation justifiée</td>
-    </tr>
-    <tr>
-        <td class="border border-black p-2">
-            Type de réponse : {{ $reclamation->processing_analysis ?? '...................................................' }}
-            &nbsp;&nbsp;
-            Date d'envoi : {{ $reclamation->received_at ? \Carbon\Carbon::parse($reclamation->received_at)->format('d/m/Y') : '......./......./...........................' }}
         </td>
     </tr>
 </table>

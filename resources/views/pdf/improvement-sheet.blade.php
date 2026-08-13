@@ -72,8 +72,8 @@
     {{-- SECTION : Initiation --}}
     {{-- ═══════════════════════════════════════════════════════ --}}
     @php
-$natureOptions = ['AC' => 'Action corrective', 'AM' => 'Amélioration'];
-$isRisqueOpp = !in_array($improvementSheet->finding_source, $natureOptions);
+        $natureOptions = ['AC' => 'Action corrective', 'AM' => 'Amélioration'];
+        $isRisqueOpp = !in_array($improvementSheet->finding_source, $natureOptions);
     @endphp
 
     <table class="w-full border-collapse border border-black mb-2">
@@ -123,23 +123,23 @@ $isRisqueOpp = !in_array($improvementSheet->finding_source, $natureOptions);
             <td class="border border-black p-2">
                 <p class="mb-1"><strong>Description de la non-conformité ou suggestion d'amélioration :</strong></p>
                 <p class="mb-3">{{ $improvementSheet->description }}</p>
-               
+
             </td>
         </tr>
     </table>
 
     <div class="flex justify-between mb-4">
         <div class="text-start w-full">
-        <p class="mb-3"><strong>Responsable désigné :</strong> {{ $improvementSheet->responsable->full_name ?? '' }}</p>
-        <p class="mb-3">
-            <strong>Délai de fin prévu :</strong>
-            {{ optional($improvementSheet->improvementActions->first())->due_date ? \Carbon\Carbon::parse($improvementSheet->improvementActions->first()->due_date)->format('d/m/Y') : '' }}
-        </p>
+            <p class="mb-3"><strong>Responsable désigné :</strong> {{ $improvementSheet->responsable->full_name ?? '' }}
+            </p>
+            <p class="mb-3">
+                <strong>Délai de fin prévu :</strong>
+                {{ optional($improvementSheet->improvementActions->first())->due_date ? \Carbon\Carbon::parse($improvementSheet->improvementActions->first()->due_date)->format('d/m/Y') : '' }}
+            </p>
         </div>
-       <div class="text-start w-full">
-         <p class="mb-3"><strong>Visa émetteur :</strong> </p>
-         <p class="mb-3"> <strong>Visa Pilote : :</strong> </p>
-       </div>
+        <div class="text-start w-full">
+            <p class="mb-3"><strong>Visa émetteur : SMQ</strong> </p>
+        </div>
     </div>
 
     {{-- ═══════════════════════════════════════════════════════ --}}
@@ -153,17 +153,17 @@ $isRisqueOpp = !in_array($improvementSheet->finding_source, $natureOptions);
         </tr>
     </table>
 
-<table class="w-full border-collapse border border-black mb-2">
-    <tr>
-        <td class="border border-black p-2 text-left align-top">
-            <strong>Causes identifiées :</strong>
+    <table class="w-full border-collapse border border-black mb-2">
+        <tr>
+            <td class="border border-black p-2 text-left align-top">
+                <strong>Causes identifiées :</strong>
 
-            <pre class="mt-1 whitespace-pre-wrap break-words text-left font-sans m-0">
+                <pre class="mt-1 whitespace-pre-wrap break-words text-left font-sans m-0">
 {{ $improvementSheet->cause_analysis }}
             </pre>
-        </td>
-    </tr>
-</table>
+            </td>
+        </tr>
+    </table>
 
     <table class="w-full border-collapse border border-black mb-3">
         <tr>
@@ -217,7 +217,7 @@ $isRisqueOpp = !in_array($improvementSheet->finding_source, $natureOptions);
                 <p class="mb-1">
                     <strong>Date d'évaluation :</strong>
                     {{ $improvementSheet->evaluation_date ? \Carbon\Carbon::parse($improvementSheet->evaluation_date)->format('d/m/Y') : '' }}
-                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <br>
                     <strong>Efficacité :</strong>
                     &nbsp;&nbsp;
                     {{ $improvementSheet->effectiveness === true ? '☑' : '☐' }} Oui
@@ -239,16 +239,16 @@ $isRisqueOpp = !in_array($improvementSheet->finding_source, $natureOptions);
                     {{ $improvementSheet->closed === true ? '☑' : '☐' }} Oui
                     &nbsp;&nbsp;
                     {{ $improvementSheet->closed === false ? '☑' : '☐' }} Non
-                    &nbsp;&nbsp;&nbsp;&nbsp;
-                    <strong>Action complémentaire N° :</strong>
+                    @if ($improvementSheet?->complementaryAction)
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <strong>Action complémentaire N° :</strong> {{ $improvementSheet?->complementaryAction?->code }}
+                    @endif
+
                 </p>
                 <p class="mb-1"><strong>Observations :</strong> {{ $improvementSheet->observation_description }}</p>
                 <p class="mb-5"><strong>Visa Responsable management qualité :</strong></p>
             </td>
         </tr>
     </table>
-
-
 </body>
-
 </html>

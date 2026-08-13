@@ -18,21 +18,21 @@ return new class extends Migration
             $table->string('code', 20)->unique();
             $table->foreignIdFor(CorrectiveAction::class)->nullable();
             $table->string('finding_source', 100)->default('Action corrective');
-
             $table->longText('description')->nullable();
             $table->longText('cause_analysis')->nullable();
-
             $table->string('title', 500)->nullable();
             $table->foreignIdFor(User::class, 'responsable_id')->nullable();
             $table->foreignIdFor(Service::class)->nullable();
-            $table->string('impact', 20)->nullable();
             $table->string('statut', 30)->default('Planifié');
             // Evaluation
             $table->boolean('closed')->nullable();
+            $table->date('closing_date')->nullable();
+            $table->foreignIdFor(CorrectiveAction::class, 'complementary_action')->nullable();
+
             $table->boolean('effectiveness')->nullable();
             $table->longText('observation_description')->nullable();
-            $table->date('observation_date')->nullable();
-            $table->date('closing_date')->nullable();
+            $table->date('evaluation_date')->nullable();
+       
             $table->timestamps();
         });
     }

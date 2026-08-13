@@ -163,11 +163,25 @@ class CorrectiveActionController extends Controller
             ], 422);
         }
 
+        $reclamation = $correctiveAction->reclamation;
+
         $validated = $request->validate([
             'description'            => ['required', 'string'],
             'type'                   => ['nullable', 'string', 'max:30'],
             'effectiveness_criteria' => ['nullable', 'string', 'max:500'],
-            'due_date'               => ['nullable', 'date'],
+            'due_date'               => [
+                'nullable',
+                'date',
+                function ($attribute, $value, $fail) use ($reclamation) {
+                    if (
+                        $reclamation?->planned_closing_date &&
+                        $value &&
+                        \Carbon\Carbon::parse($value)->gt($reclamation->planned_closing_date)
+                    ) {
+                        $fail("La date d'échéance doit être antérieure ou égale à la date de clôture prévue de la réclamation ({$reclamation->planned_closing_date->format('d/m/Y')}).");
+                    }
+                },
+            ],
             'service_id'             => ['nullable', 'exists:services,id'],
             'responsable_id'         => ['nullable', 'exists:users,id'],
         ]);

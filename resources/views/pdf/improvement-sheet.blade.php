@@ -216,7 +216,7 @@ $isRisqueOpp = !in_array($improvementSheet->finding_source, $natureOptions);
             <td class="border border-black p-2">
                 <p class="mb-1">
                     <strong>Date d'évaluation :</strong>
-                    {{ $improvementSheet->observation_date ? \Carbon\Carbon::parse($improvementSheet->observation_date)->format('d/m/Y') : '' }}
+                    {{ $improvementSheet->evaluation_date ? \Carbon\Carbon::parse($improvementSheet->evaluation_date)->format('d/m/Y') : '' }}
                     &nbsp;&nbsp;&nbsp;&nbsp;
                     <strong>Efficacité :</strong>
                     &nbsp;&nbsp;

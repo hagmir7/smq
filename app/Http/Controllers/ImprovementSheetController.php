@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\CorrectiveAction;
 use App\Models\ImprovementAction;
 use App\Models\ImprovementSheet;
 use App\Models\ImprovementSheetResponsible;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Spatie\LaravelPdf\Facades\Pdf;
 
 
@@ -48,7 +50,7 @@ class ImprovementSheetController extends Controller
             });
         }
 
-   
+
 
         $sheets = $query->latest()->paginate($request->integer('per_page', 15));
 
@@ -78,7 +80,6 @@ class ImprovementSheetController extends Controller
             'title'                    => ['nullable', 'string', 'max:500'],
             'responsable_id'           => ['nullable', 'exists:users,id'],
             'service_id'               => ['nullable', 'exists:services,id'],
-            'impact'                   => ['nullable', 'string', 'max:20'],
             'statut'                   => ['nullable', 'string', 'max:30'],
         ]);
 
@@ -110,7 +111,6 @@ class ImprovementSheetController extends Controller
             'title'                => ['sometimes', 'nullable', 'string', 'max:500'],
             'responsable_id'       => ['sometimes', 'nullable', 'exists:users,id'],
             'service_id'           => ['sometimes', 'nullable', 'exists:services,id'],
-            'impact'               => ['sometimes', 'nullable', 'string', 'max:20'],
             'statut'               => ['sometimes', 'string', 'max:30'],
         ]);
 
@@ -127,30 +127,71 @@ class ImprovementSheetController extends Controller
      */
     public function evaluate(Request $request, ImprovementSheet $improvementSheet): JsonResponse
     {
+        // Peek at 'closed' before validation so we can branch the rest of the rules on it.
+        // Tri-state: true = closed, false = not closed, null = "action complémentaire".
+        $closedRaw = $request->has('closed') ? $request->input('closed') : null;
+        $closed = $closedRaw === null ? null : filter_var($closedRaw, FILTER_VALIDATE_BOOLEAN);
+        $isComplementaryAction = $closed === null;
+
         $validated = $request->validate([
             'effectiveness'            => ['required', 'boolean'],
             'observation_description'  => ['required', 'string'],
-            'observation_date'         => ['required', 'date'],
-            'closed'                   => ['required', 'boolean'],
+            'evaluation_date'          => ['required', 'date'],
+            'closed'                   => ['present', 'nullable', 'boolean'],
             'closing_date'             => ['nullable', 'date', 'required_if:closed,true'],
+
+            // Corrective action fields — required only when closed is null
+            'description'      => [Rule::requiredIf($isComplementaryAction), 'nullable', 'string', 'max:500'],
+            'due_date'          => [Rule::requiredIf($isComplementaryAction), 'nullable', 'date'],
+            'service_id'        => ['nullable', 'exists:services,id'], // optional either way
+            'responsable_id'    => [Rule::requiredIf($isComplementaryAction), 'nullable', 'exists:users,id'],
         ]);
 
-        $improvementSheet->update([
-            'effectiveness'            => $validated['effectiveness'],
-            'observation_description'  => $validated['observation_description'],
-            'observation_date'         => $validated['observation_date'],
-            'closed'                   => $validated['closed'],
-            'closing_date'             => $validated['closed'] ? ($validated['closing_date'] ?? now()) : null,
-            'statut'                   => $validated['closed'] ? 'Clôturée' : 'En cours',
-        ]);
+        // Re-derive from validated data for consistency (booleans are now cast correctly)
+        $closed = $validated['closed'];
+
+        try {
+            $improvementSheet = DB::transaction(function () use ($validated, $improvementSheet, $closed) {
+                $improvementSheet->update([
+                    'effectiveness'           => $validated['effectiveness'],
+                    'observation_description' => $validated['observation_description'],
+                    'evaluation_date'         => $validated['evaluation_date'],
+                    'closed'                  => $closed,
+                    'closing_date'            => $closed === true ? ($validated['closing_date'] ?? now()) : null,
+                    'statut'                  => $closed === true ? 'Clôturée' : 'En cours',
+                ]);
+
+                if ($closed === null && !$improvementSheet->complementary_action) {
+                    $correctiveAction = CorrectiveAction::create([
+                        'description'     => $validated['description'],
+                        'due_date'        => $validated['due_date'],
+                        'service_id'      => $validated['service_id'] ?? null,
+                        'responsable_id'  => $validated['responsable_id'],
+                        'reclamation_id'  => $improvementSheet->correctiveAction?->reclamation_id,
+                        'code'            => $this->generateACNextCode(),
+                        'user_id'         => auth()->id(),
+                    ]);
+
+                    $improvementSheet->update([
+                        'complementary_action' => $correctiveAction->id,
+                    ]);
+                }
+
+                return $improvementSheet;
+            });
+        } catch (\Throwable $e) {
+            report($e); // logs it via the exception handler
+
+            return response()->json([
+                'message' => "Une erreur est survenue lors de l'enregistrement de l'évaluation.",
+            ], 500);
+        }
 
         return response()->json([
             'message' => 'Évaluation enregistrée.',
             'data'    => $improvementSheet->fresh(),
         ]);
     }
-
-
     /**
      * List improvement actions for a specific improvement sheet.
      */
@@ -222,7 +263,7 @@ class ImprovementSheetController extends Controller
         });
     }
 
-        /**
+    /**
      * List all responsibles for a given improvement sheet.
      */
     public function responsibles(ImprovementSheet $improvementSheet): JsonResponse
@@ -307,5 +348,20 @@ class ImprovementSheetController extends Controller
                     © Ce document ne doit être ni reproduit ni communiqué sans l’autorisation d’INTERCOCINA
                 </div>
             ')->name(now()->format('Ymd_His') . '-improvementSheet.pdf');
+    }
+
+    private function generateACNextCode(): string
+    {
+        return DB::transaction(function () {
+            $lastCode = CorrectiveAction::lockForUpdate()
+                ->orderByDesc('id')
+                ->value('code');
+
+            $lastNumber = $lastCode
+                ? (int) substr($lastCode, 2) // Remove "AC"
+                : 0;
+
+            return 'AC' . str_pad($lastNumber + 1, 5, '0', STR_PAD_LEFT);
+        });
     }
 }

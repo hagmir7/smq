@@ -41,7 +41,7 @@ class ImprovementSheetObserver
                 'process'                      => $sheet->service?->name,
                 'responsible'                  => $sheet->responsable?->name,
                 'planned_deadline'             => null,
-                'actual_date'                  => $sheet->observation_date,
+                'actual_date'                  => $sheet->evaluation_date,
                 'effectiveness_criteria'       => null,
                 'effectiveness'                => $sheet->effectiveness,
                 'closure_date'                 => $sheet->closing_date,

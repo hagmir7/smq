@@ -16,12 +16,12 @@ class ImprovementSheet extends Model
         'title',
         'responsable_id',
         'service_id',
-        'impact',
+        'complementary_action',
         'statut',
         'closed',
         'effectiveness',
         'observation_description',
-        'observation_date',
+        'evaluation_date',
         'closing_date',
     ];
 
@@ -30,7 +30,7 @@ class ImprovementSheet extends Model
     protected $casts = [
         'closed'           => 'boolean',
         'effectiveness'    => 'boolean',
-        'observation_date' => 'date',
+        'evaluation_date' => 'date',
         'closing_date'     => 'date',
     ];
 
@@ -57,5 +57,9 @@ class ImprovementSheet extends Model
     public function responsibles()
     {
         return $this->hasMany(ImprovementSheetResponsible::class);
+    }
+
+    public function complementaryAction(){
+        return $this->belongsTo(CorrectiveAction::class, 'complementary_action');
     }
 }

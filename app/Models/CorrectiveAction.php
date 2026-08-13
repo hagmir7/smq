@@ -18,7 +18,7 @@ class CorrectiveAction extends Model
         'code',
         'description',
         'type',
-        'effectiveness_criteria',
+        // 'effectiveness_criteria',
         'due_date',
         'completion_date',
         'effectiveness',

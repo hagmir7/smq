@@ -241,7 +241,6 @@ class ReclamationController extends Controller
             'cause_analysis'       => $validated['cause_analysis'] ?? null,
             'priority'             => $validated['priority'] ?? $reclamation->priority,
             'planned_closing_date' => $validated['planned_closing_date'] ?? null,
-            'statut'               => 'Clôturée',
             'workflow_step'        => 3,
         ]);
 
@@ -294,7 +293,19 @@ class ReclamationController extends Controller
             'description'             => ['required', 'string'],
             'type'                    => ['nullable', 'string', 'max:30'],
             'effectiveness_criteria'  => ['nullable', 'string', 'max:500'],
-            'due_date'                => ['nullable', 'date'],
+            'due_date'                => [
+                'nullable',
+                'date',
+                function ($attribute, $value, $fail) use ($reclamation) {
+                    if (
+                        $reclamation->planned_closing_date &&
+                        $value &&
+                        \Carbon\Carbon::parse($value)->gt($reclamation->planned_closing_date)
+                    ) {
+                        $fail("La date d'échéance doit être antérieure ou égale à la date de clôture prévue de la réclamation ({$reclamation->planned_closing_date->format('d/m/Y')}).");
+                    }
+                },
+            ],
             'service_id'              => ['nullable', 'exists:services,id'],
             'responsable_id'          => ['nullable', 'exists:users,id'],
             'parent_id'               => ['nullable', 'exists:corrective_actions,id'],
@@ -307,7 +318,7 @@ class ReclamationController extends Controller
                 'type'            => $validated['type'] ?? 'Action corrective',
                 'reclamation_id'  => $reclamation->id,
                 'user_id'         => Auth::id(),
-                'status'              => $validated['responsable_id'] ? 'Affectée' : 'Créée'
+                'status'          => $validated['responsable_id'] ? 'Affectée' : 'Créée',
             ]);
         });
 

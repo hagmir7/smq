@@ -73,7 +73,7 @@ $objetPredefini = collect(array_merge($objetGauche, $objetDroite))
     ->first(fn($label) => str_contains(mb_strtolower($label), mb_strtolower($reclamation->object ?? '__none__')));
 @endphp
 
-<p class="italic font-bold text-[11pt] mb-2">I PARTIE A REMPLIR PAR LE SMQ</p>
+<p class="italic font-bold underline text-[11pt] mb-2">I PARTIE A REMPLIR PAR LE RECLAMENT</p>
 
 <p class="font-bold mb-1">
     Date de la réclamation ou de la suggestion :
@@ -86,12 +86,8 @@ $objetPredefini = collect(array_merge($objetGauche, $objetDroite))
             <p class="mb-1"><strong>Nom et prénom :</strong> {{ $reclamation->claimant_name }}</p>
             <p class="mb-1"><strong>Référence Client :</strong> {{ $reclamation->client_code }}</p>
             <p class="mb-1"><strong>Mode de réception de la réclamation/ Suggestion :</strong></p>
-            <p class="mb-0.5">{{ $reclamation->reception_method === 'Téléphone' ? '☑' : '☐' }} Par téléphone</p>
-            <p class="mb-0.5">{{ $reclamation->reception_method === 'Email' ? '☑' : '☐' }} Par email</p>
-            <p class="mb-0.5">{{ $reclamation->reception_method === 'En personne' ? '☑' : '☐' }} En personne</p>
             <p class="mb-0.5">
-                {{ !in_array($reclamation->reception_method, ['Téléphone', 'Email', 'En personne']) ? '☑' : '☐' }}
-                Autre : {{ !in_array($reclamation->reception_method, ['Téléphone', 'Email', 'En personne']) ? $reclamation->reception_method : '..................' }}
+                {{ $reclamation->reception_method }}
             </p>
         </td>
     </tr>
@@ -99,8 +95,10 @@ $objetPredefini = collect(array_merge($objetGauche, $objetDroite))
 
 <table class="w-full border-collapse border border-black mb-3">
     <tr>
-        <td colspan="2" class="border border-black p-1.5 font-bold">
-            DESCRIPTION DE LA RECLAMATION OU DE LA SUGGESTION
+        <td colspan="2" class="border border-white text-center p-1.5 font-bold " style="background-color:#365F91;">
+            <span class="text-white">
+                DESCRIPTION DE LA RECLAMATION OU DE LA SUGGESTION
+            </span>
         </td>
     </tr>
     <tr>
@@ -111,8 +109,8 @@ $objetPredefini = collect(array_merge($objetGauche, $objetDroite))
 
     </tr>
     <tr>
-        <td class="border border-black p-2 font-bold align-top">
-            <strong> Décrire la réclamation /suggestion :</strong><br>
+        <td class="border border-black p-2 align-top">
+            <strong class="font-bold"> Décrire la réclamation /suggestion :</strong><br>
             {{ $reclamation->description }}
         </td>
 
@@ -121,23 +119,25 @@ $objetPredefini = collect(array_merge($objetGauche, $objetDroite))
 
 <p class="font-bold mb-1">Remplis par : {{ $reclamation->user->full_name ?? '' }}</p>
 <p class="font-bold mb-1">
+    Enregistré le :
+    {{ $reclamation->registration_date ? \Carbon\Carbon::parse($reclamation->registration_date)->format('d/m/Y') : '...........................................' }}
+</p>
+<p class="font-bold mb-1">
     Recevable :
     {{ $reclamation->is_recevable === true ? 'oui ☑' : 'oui ☐' }}
     &nbsp;&nbsp;
     {{ $reclamation->is_recevable === false ? 'non ☑' : 'non ☐' }}
 </p>
-<p class="font-bold mb-1">
-    Enregistré le :
-    {{ $reclamation->registration_date ? \Carbon\Carbon::parse($reclamation->registration_date)->format('d/m/Y') : '...........................................' }}
-</p>
-<p class="mb-4"><strong>Visa du Directeur :</strong></p>
+
+<p class="text-end p-0 m-0"><strong>Visa du Directeur :</strong></p>
+<p class="p-6"></p>
 
 {{-- ═══════════════════════════════════════════════════════ --}}
 {{-- II. PARTIE A REMPLIR PAR LE RESPONSABLE DU TRAITEMENT   --}}
 {{-- ═══════════════════════════════════════════════════════ --}}
-<p class="italic font-bold underline mb-2">II PARTIE A REMPLIR PAR LE RESPONSABLE DU TRAITEMENT</p>
+<p class="italic font-bold underline mb-2">II PARTIE A REMPLIR PAR LE RESPONSABLE SMQ</p>
 
-<table class="w-full border-collapse border border-black mb-3">
+{{-- <table class="w-full border-collapse border border-black mb-3">
     <tr>
         <td class="border border-black p-2">
             <p class="mb-1">
@@ -154,11 +154,11 @@ $objetPredefini = collect(array_merge($objetGauche, $objetDroite))
             </p>
         </td>
     </tr>
-</table>
+</table> --}}
 
 <table class="w-full border-collapse border border-black mb-3">
-    <tr>
-        <td class="border border-black p-1.5 font-bold">1) Analyse de la réclamation ou de la suggestion</td>
+    <tr style="background-color:#365F91;">
+        <td class="border border-black text-white p-1.5 font-bold">1) Analyse de la réclamation ou de la suggestion</td>
     </tr>
     <tr>
         <td class="border border-black p-2 align-top" style="min-height:80px;">
@@ -174,21 +174,23 @@ $objetPredefini = collect(array_merge($objetGauche, $objetDroite))
 </table>
 
 <table class="w-full border-collapse border border-black mb-3">
-    <tr>
-        <td class="border border-black p-1.5 font-bold">2) Action décidée</td>
+    <tr style="background-color:#365F91;">
+        <td class="border border-black text-white p-1.5 font-bold">2) Action décidée</td>
     </tr>
     <tr>
         <td class="border border-black p-2">
             <table class="w-full border-collapse border border-black">
                 <tr>
                     <td class="border border-black p-1 font-bold text-center w-[34%]">Actions</td>
-                    <td class="border border-black p-1 font-bold text-center w-[22%]">Responsable</td>
-                    <td class="border border-black p-1 font-bold text-center w-[22%]">Date de réalisation</td>
-                    <td class="border border-black p-1 font-bold text-center w-[22%]">N° de la fiche d'amélioration</td>
+                    <td class="border border-black p-1 font-bold text-center w-[22%]">Processes</td>
+                    <td class="border border-black p-1 font-bold text-center w-[18%]">Responsable</td>
+                    <td class="border border-black p-1 font-bold text-center w-[18%]">Date réalisation</td>
+                    <td class="border border-black p-1 font-bold text-center w-[18%]">N° fiche d'amélioration</td>
                 </tr>
                 @forelse($reclamation->correctiveActions ?? [] as $action)
                 <tr>
                     <td class="border border-black p-1">{{ $action->description }}</td>
+                     <td class="border border-black p-1">{{ $action?->service?->name }}</td>
                     <td class="border border-black p-1 text-center">{{ $action->responsable->full_name ?? '' }}</td>
                     <td class="border border-black p-1 text-center">
                         {{ $action->completion_date ? \Carbon\Carbon::parse($action->completion_date)->format('d/m/Y') : '' }}
@@ -201,7 +203,7 @@ $objetPredefini = collect(array_merge($objetGauche, $objetDroite))
                 </tr>
                 @endforelse
             </table>
-            <p class="mt-2 mb-1">
+            {{-- <p class="mt-2 mb-1">
                 <strong>Responsable :</strong>
                 {{ optional($reclamation->correctiveActions->first())->responsable->full_name ?? '..................................................................................' }}
             </p>
@@ -209,19 +211,21 @@ $objetPredefini = collect(array_merge($objetGauche, $objetDroite))
                 Date :
                 {{ optional($reclamation->correctiveActions->first())->completion_date ? \Carbon\Carbon::parse($reclamation->correctiveActions->first()->completion_date)->format('d/m/Y') : '...../...../...............' }}
                 - Signature du Responsable :
-            </p>
+            </p> --}}
         </td>
     </tr>
 </table>
 
 <table class="w-full border-collapse border border-black mb-3">
-    <tr>
-        <td class="border border-black p-1.5 font-bold">4) Clôture de la fiche</td>
+    <tr style="background-color:#365F91;">
+        <td class="border border-black text-white p-1.5 font-bold">4) Clôture de la fiche</td>
     </tr>
     <tr>
         <td class="border border-black p-2">
             Date de la clôture:
-            {{ $reclamation->closing_date ? \Carbon\Carbon::parse($reclamation->closing_date)->format('d/m/Y') : '......./......./............' }}
+            <strong>{{ $reclamation->closing_date ? \Carbon\Carbon::parse($reclamation->closing_date)->format('d/m/Y') : '......./......./............' }}</strong>
+            <br>
+            <p class="text-end text-md pb-8 font-semibold">Visa Responsable Management qualité:</p>
         </td>
     </tr>
 </table>

@@ -75,38 +75,41 @@ class DashboardController extends Controller
      * column (e.g. value 'critique'/'high'). Adjust the condition to match
      * your actual column/values.
      */
-    public function reclamationStates()
+    public function reclamationStates(Request $request)
     {
-        $total = \App\Models\Reclamation::count();
+        $year = $request->query('year');
+
+        $query = \App\Models\Reclamation::query();
+
+        if ($year) {
+            $query->whereYear('created_at', $year);
+        }
+
+        $total = (clone $query)->count();
 
         if ($total === 0) {
             return response()->json([
-                'Clôturées' => 0,
-                'Critique' => 0,
-                'En cours' => 0,
+                1 => 0,
+                2 => 0,
+                3 => 0,
+                4 => 0,
+                5 => 0,
             ]);
         }
 
-        $closed = \App\Models\Reclamation::whereNotNull('closing_date')->count();
+        $counts = (clone $query)
+            ->selectRaw('workflow_step, count(*) as total')
+            ->groupBy('workflow_step')
+            ->pluck('total', 'workflow_step');
 
-        $critical = \App\Models\Reclamation::whereNull('closing_date')
-            ->where('priority', 'critique')
-            ->count();
+        $states = [];
+        foreach (range(1, 5) as $step) {
+            $count = $counts->get($step, 0);
+            $states[$step] = round(($count / $total) * 100);
+        }
 
-        $inProgress = \App\Models\Reclamation::whereNull('closing_date')
-            ->where(function ($query) {
-                $query->where('priority', '!=', 'critique')
-                    ->orWhereNull('priority');
-            })
-            ->count();
-
-        return response()->json([
-            'Clôturées' => round(($closed / $total) * 100),
-            'Critique' => round(($critical / $total) * 100),
-            'En cours' => round(($inProgress / $total) * 100),
-        ]);
+        return response()->json($states);
     }
-
 
 
 

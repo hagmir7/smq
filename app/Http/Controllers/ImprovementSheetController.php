@@ -22,7 +22,7 @@ class ImprovementSheetController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = ImprovementSheet::query()
-            ->with(['correctiveAction', 'responsable', 'service', 'responsibles.responsable', 'responsibles.service']);
+            ->with(['correctiveAction', 'responsable', 'service', 'improvementActions.responsable', 'improvementActions.service']);
 
         if ($request->filled('statut')) {
             $query->where('statut', $request->string('statut'));
@@ -63,7 +63,7 @@ class ImprovementSheetController extends Controller
     public function show(ImprovementSheet $improvementSheet): JsonResponse
     {
         return response()->json(
-            $improvementSheet->load(['correctiveAction', 'responsibles.responsable', 'responsibles.service'])
+            $improvementSheet->load(['correctiveAction', 'improvementActions.responsable', 'improvementActions.service'])
         );
     }
 
@@ -79,6 +79,9 @@ class ImprovementSheetController extends Controller
             'cause_analysis'              => ['nullable', 'string'],
             'title'                       => ['nullable', 'string', 'max:500'],
             'statut'                      => ['nullable', 'string', 'max:30'],
+
+            'responsable_id'           => ['nullable', 'exists:users,id'],
+            'service_id'               => ['nullable', 'exists:services,id'],
 
             'responsibles'                => ['required', 'array', 'min:1'],
             'responsibles.*.responsable_id' => ['required', 'exists:users,id'],
@@ -100,7 +103,7 @@ class ImprovementSheetController extends Controller
 
         return response()->json([
             'message' => 'Fiche d\'amélioration créée avec succès.',
-            'data'    => $sheet->load(['correctiveAction', 'responsibles.responsable', 'responsibles.service']),
+            'data'    => $sheet->load(['correctiveAction', 'improvementActions.responsable', 'improvementActions.service']),
         ], 201);
     }
 
@@ -116,6 +119,9 @@ class ImprovementSheetController extends Controller
             'cause_analysis'                 => ['sometimes', 'nullable', 'string'],
             'title'                          => ['sometimes', 'nullable', 'string', 'max:500'],
             'statut'                         => ['sometimes', 'string', 'max:30'],
+
+            'responsable_id'           => ['nullable', 'exists:users,id'],
+            'service_id'               => ['nullable', 'exists:services,id'],
 
             'responsibles'                   => ['sometimes', 'array', 'min:1'],
             'responsibles.*.responsable_id'  => ['required_with:responsibles', 'exists:users,id'],
@@ -135,7 +141,7 @@ class ImprovementSheetController extends Controller
 
         return response()->json([
             'message' => 'Fiche d\'amélioration mise à jour.',
-            'data'    => $improvementSheet->fresh()->load(['correctiveAction', 'responsibles.responsable', 'responsibles.service']),
+            'data'    => $improvementSheet->fresh()->load(['correctiveAction', 'improvementActions.responsable', 'improvementActions.service']),
         ]);
     }
 

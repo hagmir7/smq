@@ -72,8 +72,8 @@
     {{-- SECTION : Initiation --}}
     {{-- ═══════════════════════════════════════════════════════ --}}
     @php
-        $natureOptions = ['AC' => 'Action corrective', 'AM' => 'Amélioration'];
-        $isRisqueOpp = !in_array($improvementSheet->finding_source, $natureOptions);
+$natureOptions = ['AC' => 'Action corrective', 'AM' => 'Amélioration'];
+$isRisqueOpp = !in_array($improvementSheet->finding_source, $natureOptions);
     @endphp
 
     <table class="w-full border-collapse border border-black mb-2">
@@ -89,7 +89,7 @@
         <tr>
             <td class="border border-black p-2">
                 <p class="mb-1">
-                    <strong>Emetteur :</strong> {{ $improvementSheet->responsable->full_name ?? '' }}
+                    <strong>Emetteur :</strong> LAMKADMI Khadija
                 </p>
             </td>
             <td class="border border-black p-2">
@@ -122,7 +122,7 @@
         <tr>
             <td class="border border-black p-2">
                 <p class="mb-1"><strong>Description de la non-conformité ou suggestion d'amélioration :</strong></p>
-                <p class="mb-3">{{ $improvementSheet->description }}</p>
+                <p class=" p-0 m-0">{{ $improvementSheet->description }}</p>
 
             </td>
         </tr>
@@ -130,17 +130,26 @@
 
     <div class="flex justify-between mb-4">
         <div class="text-start w-full">
-            <p class="mb-3"><strong>Responsable désigné :</strong> {{ $improvementSheet->responsable->full_name ?? '' }}
-            </p>
-            <p class="mb-3">
-                <strong>Délai de fin prévu :</strong>
-                {{ optional($improvementSheet->improvementActions->first())->due_date ? \Carbon\Carbon::parse($improvementSheet->improvementActions->first()->due_date)->format('d/m/Y') : '' }}
-            </p>
+            <p class="p-0 m-0"><strong>Responsable désigné :</strong> </p>
+                <ul class="list-disc pb-3">
+                    @foreach($improvementSheet->improvementActions ?? [] as $action)
+                        <li>- {{ $action?->responsable?->full_name }}</li>
+                    @endforeach
+                </ul>
+           
+            
         </div>
-        <div class="text-start w-full">
-            <p class="mb-3"><strong>Visa émetteur : SMQ</strong> </p>
-        </div>
+       <div>
+         <p class="whitespace-nowrap p-0 m-0"> 
+            <strong>Délai de fin prévu :</strong> 
+            {{ optional($improvementSheet->improvementActions->first())->due_date ? \Carbon\Carbon::parse($improvementSheet->improvementActions->first()->due_date)->format('d/m/Y') : '' }}
+        </p>
+       </div>
     </div>
+    <div class="text-end w-full pb-3">
+        <p class="mb-3"><strong>Visa émetteur :</strong> </p>
+    </div>
+      
 
     {{-- ═══════════════════════════════════════════════════════ --}}
     {{-- SECTION : Elaboration du plan d'action / Réalisation --}}
@@ -155,10 +164,10 @@
 
     <table class="w-full border-collapse border border-black mb-2">
         <tr>
-            <td class="border border-black p-2 text-left align-top">
+            <td class="border border-black p-2 text-left align-top pb-0">
                 <strong>Causes identifiées :</strong>
 
-                <pre class="mt-1 whitespace-pre-wrap break-words text-left font-sans m-0">
+                <pre class="mt-1 whitespace-pre-wrap break-words text-left font-sans m-0 p-0 m-0">
 {{ $improvementSheet->cause_analysis }}
             </pre>
             </td>

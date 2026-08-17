@@ -22,7 +22,7 @@ class ImprovementSheetController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = ImprovementSheet::query()
-            ->with(['correctiveAction', 'responsable', 'service']);
+            ->with(['correctiveAction', 'responsable', 'service', 'responsibles.responsable', 'responsibles.service']);
 
         if ($request->filled('statut')) {
             $query->where('statut', $request->string('statut'));
@@ -63,7 +63,7 @@ class ImprovementSheetController extends Controller
     public function show(ImprovementSheet $improvementSheet): JsonResponse
     {
         return response()->json(
-            $improvementSheet->load(['correctiveAction', 'responsable', 'service'])
+            $improvementSheet->load(['correctiveAction', 'responsibles.responsable', 'responsibles.service'])
         );
     }
 
@@ -73,28 +73,34 @@ class ImprovementSheetController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'corrective_action_id'     => ['nullable', 'exists:corrective_actions,id'],
-            'finding_source'           => ['nullable', 'string', 'max:100'],
-            'description'              => ['nullable', 'string'],
-            'cause_analysis'           => ['nullable', 'string'],
-            'title'                    => ['nullable', 'string', 'max:500'],
-            'responsable_id'           => ['nullable', 'exists:users,id'],
-            'service_id'               => ['nullable', 'exists:services,id'],
-            'statut'                   => ['nullable', 'string', 'max:30'],
+            'corrective_action_id'        => ['nullable', 'exists:corrective_actions,id'],
+            'finding_source'              => ['nullable', 'string', 'max:100'],
+            'description'                 => ['nullable', 'string'],
+            'cause_analysis'              => ['nullable', 'string'],
+            'title'                       => ['nullable', 'string', 'max:500'],
+            'statut'                      => ['nullable', 'string', 'max:30'],
+
+            'responsibles'                => ['required', 'array', 'min:1'],
+            'responsibles.*.responsable_id' => ['required', 'exists:users,id'],
+            'responsibles.*.service_id'     => ['nullable', 'exists:services,id'],
         ]);
 
         $sheet = DB::transaction(function () use ($validated) {
-            return ImprovementSheet::create([
-                ...$validated,
+            $sheet = ImprovementSheet::create([
+                ...collect($validated)->except('responsibles')->all(),
                 'code'           => $this->generateNextCode(),
                 'finding_source' => $validated['finding_source'] ?? 'Action corrective',
                 'statut'         => $validated['statut'] ?? 'Planifié',
             ]);
+
+            $sheet->responsibles()->createMany($validated['responsibles']);
+
+            return $sheet;
         });
 
         return response()->json([
             'message' => 'Fiche d\'amélioration créée avec succès.',
-            'data'    => $sheet->load(['correctiveAction', 'responsable', 'service']),
+            'data'    => $sheet->load(['correctiveAction', 'responsibles.responsable', 'responsibles.service']),
         ], 201);
     }
 
@@ -104,21 +110,32 @@ class ImprovementSheetController extends Controller
     public function update(Request $request, ImprovementSheet $improvementSheet): JsonResponse
     {
         $validated = $request->validate([
-            'corrective_action_id' => ['sometimes', 'nullable', 'exists:corrective_actions,id'],
-            'finding_source'       => ['sometimes', 'string', 'max:100'],
-            'description'          => ['sometimes', 'nullable', 'string'],
-            'cause_analysis'       => ['sometimes', 'nullable', 'string'],
-            'title'                => ['sometimes', 'nullable', 'string', 'max:500'],
-            'responsable_id'       => ['sometimes', 'nullable', 'exists:users,id'],
-            'service_id'           => ['sometimes', 'nullable', 'exists:services,id'],
-            'statut'               => ['sometimes', 'string', 'max:30'],
+            'corrective_action_id'           => ['sometimes', 'nullable', 'exists:corrective_actions,id'],
+            'finding_source'                 => ['sometimes', 'string', 'max:100'],
+            'description'                    => ['sometimes', 'nullable', 'string'],
+            'cause_analysis'                 => ['sometimes', 'nullable', 'string'],
+            'title'                          => ['sometimes', 'nullable', 'string', 'max:500'],
+            'statut'                         => ['sometimes', 'string', 'max:30'],
+
+            'responsibles'                   => ['sometimes', 'array', 'min:1'],
+            'responsibles.*.responsable_id'  => ['required_with:responsibles', 'exists:users,id'],
+            'responsibles.*.service_id'      => ['nullable', 'exists:services,id'],
         ]);
 
-        $improvementSheet->update($validated);
+        DB::transaction(function () use ($validated, $improvementSheet) {
+            $improvementSheet->update(collect($validated)->except('responsibles')->all());
+
+            if (array_key_exists('responsibles', $validated)) {
+                // Simplest reliable sync: wipe and re-insert.
+                // Fine here since these rows carry no independent identity/history worth preserving.
+                $improvementSheet->responsibles()->delete();
+                $improvementSheet->responsibles()->createMany($validated['responsibles']);
+            }
+        });
 
         return response()->json([
             'message' => 'Fiche d\'amélioration mise à jour.',
-            'data'    => $improvementSheet->fresh()->load(['correctiveAction', 'responsable', 'service']),
+            'data'    => $improvementSheet->fresh()->load(['correctiveAction', 'responsibles.responsable', 'responsibles.service']),
         ]);
     }
 

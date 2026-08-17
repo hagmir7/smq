@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('claimant_name', 200);
             $table->string('client_code');
             $table->string('client_phone', 30)->nullable();
-            $table->string('client_email', 255)->nullable();
             $table->string('client_company_name', 200)->nullable();
             $table->string('reception_method', 500)->nullable();
             $table->string('object', 500);

@@ -44,8 +44,8 @@ class ReclamationController extends Controller
                 $q->where('claimant_name', 'like', "%{$search}%")
                     ->orWhere('client_code', 'like', "%{$search}%")
                     ->orWhere('client_phone', 'like', "%{$search}%")
-                    ->orWhere('client_email', 'like', "%{$search}%")
                     ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('object', 'like', "%{$search}%")
                     ->orWhere('client_company_name', 'like', "%{$search}%");
             });
         }
@@ -91,7 +91,6 @@ class ReclamationController extends Controller
             'claimant_name'        => ['required', 'string', 'max:200'],
             'client_code'          => ['required', 'string', 'max:255'],
             'client_phone'         => ['nullable', 'string', 'max:30'],
-            'client_email'         => ['nullable', 'email', 'max:255'],
             'client_company_name'  => ['nullable', 'string', 'max:200'],
             'reception_method'     => ['nullable', 'string', 'max:500'],
             'object'               => ['required', 'string', 'max:500'],

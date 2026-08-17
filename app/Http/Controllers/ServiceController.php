@@ -21,7 +21,9 @@ class ServiceController extends Controller
 
         // Optional search by name
         if ($request->filled('search')) {
-            $query->where('name', 'like', '%' . $request->input('search') . '%');
+            $query->where('name', 'like', '%' . $request->input('search') . '%')
+            ->orWhere('code', 'like', '%' . $request->input('search') . '%')
+            ->orWhere('description', 'like', '%' . $request->input('search') . '%');
         }
 
         // Optional filter by responsible

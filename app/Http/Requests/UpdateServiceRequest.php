@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateServiceRequest extends FormRequest
 {
@@ -21,6 +22,13 @@ class UpdateServiceRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'code' => [
+                'sometimes',
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('services', 'code')->ignore($this->route('service')),
+            ],
             'description' => ['nullable', 'string'],
             'responsible_id' => ['sometimes', 'required', 'integer', 'exists:users,id'],
         ];
@@ -33,6 +41,8 @@ class UpdateServiceRequest extends FormRequest
     {
         return [
             'name.required' => 'The service name is required.',
+            'code.required' => 'The PRS reference is required.',
+            'code.unique' => 'This PRS reference is already in use.',
             'responsible_id.required' => 'A responsible user must be assigned.',
             'responsible_id.exists' => 'The selected responsible user does not exist.',
         ];

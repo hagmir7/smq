@@ -58,7 +58,9 @@ class DashboardController extends Controller
     {
         $reclamations = \App\Models\Reclamation::with(['responsable', 'user'])
             ->withcount('correctiveActions')
-            ->orderBy('created_at', 'desc')
+            // ->orderBy('created_at', 'desc')
+            
+            ->latest()
             ->take(10)
             ->get();
 

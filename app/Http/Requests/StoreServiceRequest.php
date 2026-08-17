@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreServiceRequest extends FormRequest
 {
@@ -21,7 +22,7 @@ class StoreServiceRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:255'],
+            'code' => ['required', 'string', 'max:255', 'unique:services,code'],
             'description' => ['nullable', 'string'],
             'responsible_id' => ['required', 'integer', 'exists:users,id'],
         ];
@@ -35,6 +36,7 @@ class StoreServiceRequest extends FormRequest
         return [
             'name.required' => 'Le nom du service est obligatoire.',
             'code.required' => 'La référence PRS est obligatoire.',
+            'code.unique' => 'Cette référence PRS est déjà utilisée.',
             'responsible_id.required' => 'Un responsable doit être affecté.',
             'responsible_id.exists' => 'Le responsable sélectionné n’existe pas.',
         ];

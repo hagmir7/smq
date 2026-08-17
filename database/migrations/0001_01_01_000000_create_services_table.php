@@ -14,6 +14,7 @@ return new class extends Migration
     {
         Schema::create('services', function (Blueprint $table) {
             $table->id();
+            $table->string('code')->unique();
             $table->string('name');
             $table->text('description')->nullable();
             $table->foreignIdFor(User::class, 'responsible_id')->nullable();

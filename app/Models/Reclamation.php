@@ -20,7 +20,6 @@ class Reclamation extends Model implements HasMedia
         'claimant_name',
         'client_code',
         'client_phone',
-        'client_email',
         'code',
         'client_company_name',
         'reception_method',

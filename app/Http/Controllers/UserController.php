@@ -86,10 +86,21 @@ class UserController extends Controller
 
     public function login(Request $request): JsonResponse
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
+        $request->validate([
+            'login'    => 'required|string',
             'password' => 'required|string',
         ]);
+
+        $loginInput = $request->input('login');
+
+        $loginField = filter_var($loginInput, FILTER_VALIDATE_EMAIL)
+            ? 'email'
+            : 'code';
+
+        $credentials = [
+            $loginField => $loginInput,
+            'password'  => $request->input('password'),
+        ];
 
         if (! Auth::attempt($credentials)) {
             return response()->json([
@@ -100,7 +111,6 @@ class UserController extends Controller
         $user = Auth::user();
         $user->load('service');
 
-        // Prevent inactive users from logging in
         if (! $user->is_active) {
             Auth::logout();
 
@@ -113,8 +123,8 @@ class UserController extends Controller
 
         return response()->json([
             'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user->withMergedPermissions(),
+            'token_type'   => 'Bearer',
+            'user'         => $user->withMergedPermissions(),
         ]);
     }
 

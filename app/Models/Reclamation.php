@@ -39,6 +39,7 @@ class Reclamation extends Model implements HasMedia
         'closing_date',
         'received_at',
         'user_id',
+        'status',
         'registration_date',
     ];
     

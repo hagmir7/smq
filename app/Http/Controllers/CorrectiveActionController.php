@@ -10,6 +10,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Exports\CorrectiveActionsRegisterExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CorrectiveActionController extends Controller
 {
@@ -30,59 +32,9 @@ class CorrectiveActionController extends Controller
                 'children.service',
                 'children.responsable:id,full_name',
                 'improvementSheets:id,code'
-            ]);
+            ])->withCount('children')
+            ->filtered($request);
 
-        if ($request->filled('reclamation_id')) {
-            $query->where('reclamation_id', $request->integer('reclamation_id'));
-        }
-
-        if ($request->filled('reclamation_code')) {
-            $query->whereHas('reclamation', fn($r) =>
-            $r->where('code', 'like', '%' . $request->input('reclamation_code') . '%'));
-        }
-
-        // NEW: single search box matching the corrective action's own code
-        // OR its reclamation's code.
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('code', 'like', "%{$search}%")
-                    ->orWhereHas('reclamation', fn($r) =>
-                    $r->where('code', 'like', "%{$search}%"));
-            });
-        }
-
-        if ($request->filled('service_id')) {
-            $query->where('service_id', $request->integer('service_id'));
-        }
-
-        if ($request->filled('effectiveness')) {
-            $query->where('effectiveness', $request->string('effectiveness'));
-        }
-
-        // NEW: status filter
-        if ($request->filled('status')) {
-            $query->where('status', $request->string('status'));
-        }
-
-        // NEW: created_at date range
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date('date_from'));
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date('date_to'));
-        }
-
-        if ($request->boolean('root_only')) {
-            $query->whereNull('parent_id');
-        }
-
-        $query->whereNull('parent_id');
-
-        if(auth()->user()->hasRole("pilote")){
-            $query->where("responsable_id", auth()->user()->id);
-        }
-        
         $actions = $query->latest()->paginate($request->integer('per_page', 15));
 
         return response()->json($actions);
@@ -249,5 +201,14 @@ class CorrectiveActionController extends Controller
         return response()->json(
             $query->select('id', 'code', 'description')->limit(20)->latest()->get(),
         );
+    }
+
+
+
+    public function exportRegister(Request $request)
+    {
+        $filename = 'registre-des-reclamations-' . now()->format('Y-m-d') . '.xlsx';
+
+        return Excel::download(new CorrectiveActionsRegisterExport($request), $filename);
     }
 }

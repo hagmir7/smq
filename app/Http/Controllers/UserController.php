@@ -98,6 +98,7 @@ class UserController extends Controller
         }
 
         $user = Auth::user();
+        $user->load('service');
 
         // Prevent inactive users from logging in
         if (! $user->is_active) {

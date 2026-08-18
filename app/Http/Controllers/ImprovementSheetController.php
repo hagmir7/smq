@@ -83,9 +83,9 @@ class ImprovementSheetController extends Controller
             'responsable_id'           => ['nullable', 'exists:users,id'],
             'service_id'               => ['nullable', 'exists:services,id'],
 
-            'responsibles'                => ['required', 'array', 'min:1'],
-            'responsibles.*.responsable_id' => ['required', 'exists:users,id'],
-            'responsibles.*.service_id'     => ['nullable', 'exists:services,id'],
+            // 'responsibles'                => ['required', 'array', 'min:1'],
+            // 'responsibles.*.responsable_id' => ['required', 'exists:users,id'],
+            // 'responsibles.*.service_id'     => ['nullable', 'exists:services,id'],
         ]);
 
         $sheet = DB::transaction(function () use ($validated) {
@@ -95,8 +95,6 @@ class ImprovementSheetController extends Controller
                 'finding_source' => $validated['finding_source'] ?? 'Action corrective',
                 'statut'         => $validated['statut'] ?? 'Planifié',
             ]);
-
-            $sheet->responsibles()->createMany($validated['responsibles']);
 
             return $sheet;
         });
@@ -123,21 +121,16 @@ class ImprovementSheetController extends Controller
             'responsable_id'           => ['nullable', 'exists:users,id'],
             'service_id'               => ['nullable', 'exists:services,id'],
 
-            'responsibles'                   => ['sometimes', 'array', 'min:1'],
-            'responsibles.*.responsable_id'  => ['required_with:responsibles', 'exists:users,id'],
-            'responsibles.*.service_id'      => ['nullable', 'exists:services,id'],
+            // 'responsibles'                   => ['sometimes', 'array', 'min:1'],
+            // 'responsibles.*.responsable_id'  => ['required_with:responsibles', 'exists:users,id'],
+            // 'responsibles.*.service_id'      => ['nullable', 'exists:services,id'],
         ]);
 
-        DB::transaction(function () use ($validated, $improvementSheet) {
-            $improvementSheet->update(collect($validated)->except('responsibles')->all());
+        // DB::transaction(function () use ($validated, $improvementSheet) {
+        //     $improvementSheet->update(collect($validated)->except('responsibles')->all());
 
-            if (array_key_exists('responsibles', $validated)) {
-                // Simplest reliable sync: wipe and re-insert.
-                // Fine here since these rows carry no independent identity/history worth preserving.
-                $improvementSheet->responsibles()->delete();
-                $improvementSheet->responsibles()->createMany($validated['responsibles']);
-            }
-        });
+            
+        // });
 
         return response()->json([
             'message' => 'Fiche d\'amélioration mise à jour.',

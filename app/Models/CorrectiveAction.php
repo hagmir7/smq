@@ -87,4 +87,48 @@ class CorrectiveAction extends Model
         return $this->hasOne(ImprovementSheet::class, 'id', 'id');
     }
 
+
+    public function scopeFiltered($query, \Illuminate\Http\Request $request)
+    {
+        if ($request->filled('reclamation_id')) {
+            $query->where('reclamation_id', $request->integer('reclamation_id'));
+        }
+
+        if ($request->filled('reclamation_code')) {
+            $query->whereHas('reclamation', fn($r) =>
+            $r->where('code', 'like', '%' . $request->input('reclamation_code') . '%'));
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                    ->orWhereHas('reclamation', fn($r) =>
+                    $r->where('code', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($request->filled('service_id')) {
+            $query->where('service_id', $request->integer('service_id'));
+        }
+
+        if ($request->filled('effectiveness')) {
+            $query->where('effectiveness', $request->string('effectiveness'));
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->string('status'));
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date('date_from'));
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date('date_to'));
+        }
+
+        return $query;
+    }
+
 }

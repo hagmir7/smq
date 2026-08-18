@@ -101,6 +101,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('{correctiveAction}/complete', [CorrectiveActionController::class, 'complete']);
         Route::post('{correctiveAction}/children', [CorrectiveActionController::class, 'storeChild']);
         Route::delete('{correctiveAction}', [CorrectiveActionController::class, 'destroy']);
+        Route::get('register/export', [CorrectiveActionController::class, 'exportRegister']);
        
     });
 

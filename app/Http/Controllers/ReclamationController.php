@@ -116,6 +116,7 @@ class ReclamationController extends Controller
                 'user_id'       => Auth::id(),
                 'statut'        => 'Ouverte',
                 'workflow_step' => 1,
+                'responsable_id' => 3
             ]);
 
             if ($request->hasFile('attachments')) {
@@ -337,7 +338,7 @@ class ReclamationController extends Controller
 
         $reclamation->update([
             'closing_date' => $validated['closing_date'],
-            'status' => 'Clôturée',
+            'statut' => 'Clôturée',
             'workflow_step' => 5,
         ]);
 

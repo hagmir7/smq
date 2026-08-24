@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Exports\CorrectiveActionsRegisterExport;
+use App\Models\User;
+use App\Notifications\CorrectiveActionCompletionDate;
 use Maatwebsite\Excel\Facades\Excel;
 
 class CorrectiveActionController extends Controller
@@ -66,19 +68,22 @@ class CorrectiveActionController extends Controller
     public function update(Request $request, CorrectiveAction $correctiveAction): JsonResponse
     {
         $validated = $request->validate([
-            'description'             => ['sometimes', 'string'],
-            'type'                    => ['sometimes', 'string', 'max:30'],
-            'effectiveness_criteria'  => ['sometimes', 'nullable', 'string', 'max:500'],
-            'due_date'                => ['sometimes', 'nullable', 'date'],
-            'completion_date'         => ['sometimes', 'nullable', 'date'],
-            'service_id'              => ['sometimes', 'nullable', 'exists:services,id'],
-            'responsable_id'          => ['sometimes', 'nullable', 'exists:users,id'],
-            'person_id'          =>       ['sometimes', 'nullable', 'exists:people,id'],
-            'parent_id'               => ['sometimes', 'nullable', 'exists:corrective_actions,id'],
+            'description'          => ['sometimes', 'string'],
+            'type'                 => ['sometimes', 'string', 'max:30'],
+            'effectiveness_criteria' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'due_date'             => ['sometimes', 'nullable', 'date'],
+            'completion_date'      => ['sometimes', 'nullable', 'date'],
+            'service_id'           => ['sometimes', 'nullable', 'exists:services,id'],
+            'responsable_id'       => ['sometimes', 'nullable', 'exists:users,id'],
+            'person_id'            => ['sometimes', 'nullable', 'exists:people,id'],
+            'parent_id'            => ['sometimes', 'nullable', 'exists:corrective_actions,id'],
         ]);
 
-        // Prevent an action from becoming its own parent/ancestor.
-        if (!empty($validated['parent_id']) && (int) $validated['parent_id'] === $correctiveAction->id) {
+        // Prevent an action from becoming its own parent.
+        if (
+            !empty($validated['parent_id']) &&
+            (int) $validated['parent_id'] === $correctiveAction->id
+        ) {
             return response()->json([
                 'message' => "Une action corrective ne peut pas être son propre parent.",
             ], 422);
@@ -86,9 +91,24 @@ class CorrectiveActionController extends Controller
 
         $correctiveAction->update($validated);
 
+
+        // Notify SMQ users only when completion_date was sent.
+        if (array_key_exists('completion_date', $validated) & (!auth()->user()->hasRole('smq'))) {
+            $smqUsers = User::role('smq')->get();
+   
+            foreach ($smqUsers as $user) {
+                $user->notify(new CorrectiveActionCompletionDate($correctiveAction));
+            }
+        }
+
         return response()->json([
             'message' => 'Action corrective mise à jour.',
-            'data'    => $correctiveAction->fresh()->load(['service', 'responsable', 'user', 'parent']),
+            'data' => $correctiveAction->fresh()->load([
+                'service',
+                'responsable',
+                'user',
+                'parent'
+            ]),
         ]);
     }
 

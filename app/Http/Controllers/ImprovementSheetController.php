@@ -22,7 +22,22 @@ class ImprovementSheetController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = ImprovementSheet::query()
-            ->with(['correctiveAction', 'responsable', 'service', 'improvementActions.responsable', 'improvementActions.service']);
+            ->with([
+                'correctiveAction',
+                'responsable',
+                'service',
+                'improvementActions.responsable',
+                'improvementActions.service',
+            ]);
+
+        // Admin and SMQ can see everything.
+        // Other users can only see ImprovementSheets
+        // having an improvement action assigned to them.
+        if (!auth()->user()->hasAnyRole(['admin', 'smq'])) {
+            $query->whereHas('improvementActions', function ($q) {
+                $q->where('responsable_id', auth()->id());
+            });
+        }
 
         if ($request->filled('statut')) {
             $query->where('statut', $request->string('statut'));
@@ -37,7 +52,10 @@ class ImprovementSheetController extends Controller
         }
 
         if ($request->filled('corrective_action_id')) {
-            $query->where('corrective_action_id', $request->integer('corrective_action_id'));
+            $query->where(
+                'corrective_action_id',
+                $request->integer('corrective_action_id')
+            );
         }
 
         if ($request->boolean('closed_only')) {
@@ -46,13 +64,14 @@ class ImprovementSheetController extends Controller
 
         if ($request->boolean('open_only')) {
             $query->where(function ($q) {
-                $q->whereNull('closed')->orWhere('closed', false);
+                $q->whereNull('closed')
+                    ->orWhere('closed', false);
             });
         }
 
-
-
-        $sheets = $query->latest()->paginate($request->integer('per_page', 15));
+        $sheets = $query
+            ->latest()
+            ->paginate($request->integer('per_page', 15));
 
         return response()->json($sheets);
     }
@@ -73,21 +92,19 @@ class ImprovementSheetController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'corrective_action_id'        => ['nullable', 'exists:corrective_actions,id'],
-            'finding_source'              => ['nullable', 'string', 'max:100'],
-            'description'                 => ['nullable', 'string'],
-            'cause_analysis'              => ['nullable', 'string'],
-            'title'                       => ['nullable', 'string', 'max:500'],
-            'statut'                      => ['nullable', 'string', 'max:30'],
-
-            'responsable_id'           => ['nullable', 'exists:users,id'],
-            'service_id'               => ['nullable', 'exists:services,id'],
-
-            // 'responsibles'                => ['required', 'array', 'min:1'],
-            // 'responsibles.*.responsable_id' => ['required', 'exists:users,id'],
-            // 'responsibles.*.service_id'     => ['nullable', 'exists:services,id'],
+            'corrective_action_id' => [
+                'nullable',
+                'exists:corrective_actions,id',
+                'unique:improvement_sheets,corrective_action_id',
+            ],
+            'finding_source' => ['nullable', 'string', 'max:100'],
+            'description' => ['nullable', 'string'],
+            'cause_analysis' => ['nullable', 'string'],
+            'title' => ['nullable', 'string', 'max:500'],
+            'statut' => ['nullable', 'string', 'max:30'],
+            'responsable_id' => ['nullable', 'exists:users,id'],
+            'service_id' => ['nullable', 'exists:services,id'],
         ]);
-
         $sheet = DB::transaction(function () use ($validated) {
             $sheet = ImprovementSheet::create([
                 ...collect($validated)->except('responsibles')->all(),
@@ -126,11 +143,9 @@ class ImprovementSheetController extends Controller
             // 'responsibles.*.service_id'      => ['nullable', 'exists:services,id'],
         ]);
 
-        // DB::transaction(function () use ($validated, $improvementSheet) {
-        //     $improvementSheet->update(collect($validated)->except('responsibles')->all());
-
-            
-        // });
+        DB::transaction(function () use ($validated, $improvementSheet) {
+            $improvementSheet->update(collect($validated)->all());
+        });
 
         return response()->json([
             'message' => 'Fiche d\'amélioration mise à jour.',
@@ -141,71 +156,130 @@ class ImprovementSheetController extends Controller
     /**
      * Evaluate and close an improvement sheet.
      */
-    public function evaluate(Request $request, ImprovementSheet $improvementSheet): JsonResponse
-    {
-        // Peek at 'closed' before validation so we can branch the rest of the rules on it.
-        // Tri-state: true = closed, false = not closed, null = "action complémentaire".
-        $closedRaw = $request->has('closed') ? $request->input('closed') : null;
-        $closed = $closedRaw === null ? null : filter_var($closedRaw, FILTER_VALIDATE_BOOLEAN);
+    public function evaluate(
+        Request $request,
+        ImprovementSheet $improvementSheet
+    ): JsonResponse {
+        // An improvement sheet cannot be evaluated until all
+        // its improvement actions have a completion_date.
+        $hasIncompleteAction = $improvementSheet->improvementActions()
+            ->whereNull('completion_date')
+            ->exists();
+
+        if ($hasIncompleteAction) {
+            return response()->json([
+                'message' => 'Impossible d’évaluer cette fiche d’amélioration. Toutes les actions d’amélioration doivent être réalisées et avoir une date de réalisation.',
+            ], 422);
+        }
+
+        // Optional: require at least one improvement action
+        if (!$improvementSheet->improvementActions()->exists()) {
+            return response()->json([
+                'message' => 'Impossible d’évaluer cette fiche d’amélioration. Aucune action d’amélioration n’a été enregistrée.',
+            ], 422);
+        }
+
+        // Peek at 'closed' before validation
+        $closedRaw = $request->has('closed')
+            ? $request->input('closed')
+            : null;
+
+        $closed = $closedRaw === null
+            ? null
+            : filter_var($closedRaw, FILTER_VALIDATE_BOOLEAN);
+
         $isComplementaryAction = $closed === null;
 
         $validated = $request->validate([
-            'effectiveness'            => ['required', 'boolean'],
-            'observation_description'  => ['required', 'string'],
-            'evaluation_date'          => ['required', 'date'],
-            'closed'                   => ['present', 'nullable', 'boolean'],
-            'closing_date'             => ['nullable', 'date', 'required_if:closed,true'],
+            'effectiveness' => ['required', 'boolean'],
+            'observation_description' => ['nullable', 'string'],
+            'evaluation_date' => ['required', 'date'],
+            'closed' => ['present', 'nullable', 'boolean'],
+            'closing_date' => [
+                'nullable',
+                'date',
+                'required_if:closed,true',
+            ],
 
-            // Corrective action fields — required only when closed is null
-            'description'      => [Rule::requiredIf($isComplementaryAction), 'nullable', 'string', 'max:500'],
-            'due_date'          => [Rule::requiredIf($isComplementaryAction), 'nullable', 'date'],
-            'service_id'        => ['nullable', 'exists:services,id'], // optional either way
-            'responsable_id'    => [Rule::requiredIf($isComplementaryAction), 'nullable', 'exists:users,id'],
+            'description' => [
+                Rule::requiredIf($isComplementaryAction),
+                'nullable',
+                'string',
+                'max:500',
+            ],
+
+            'due_date' => [
+                Rule::requiredIf($isComplementaryAction),
+                'nullable',
+                'date',
+            ],
+
+            'service_id' => [
+                'nullable',
+                'exists:services,id',
+            ],
+
+            'responsable_id' => [
+                Rule::requiredIf($isComplementaryAction),
+                'nullable',
+                'exists:users,id',
+            ],
         ]);
 
-        // Re-derive from validated data for consistency (booleans are now cast correctly)
         $closed = $validated['closed'];
 
         try {
-            $improvementSheet = DB::transaction(function () use ($validated, $improvementSheet, $closed) {
-                $improvementSheet->update([
-                    'effectiveness'           => $validated['effectiveness'],
-                    'observation_description' => $validated['observation_description'],
-                    'evaluation_date'         => $validated['evaluation_date'],
-                    'closed'                  => $closed,
-                    'closing_date'            => $closed === true ? ($validated['closing_date'] ?? now()) : null,
-                    'statut'                  => $closed === true ? 'Clôturée' : 'En cours',
-                ]);
-
-                if ($closed === null && !$improvementSheet->complementary_action) {
-                    $correctiveAction = CorrectiveAction::create([
-                        'description'     => $validated['description'],
-                        'due_date'        => $validated['due_date'],
-                        'service_id'      => $validated['service_id'] ?? null,
-                        'responsable_id'  => $validated['responsable_id'],
-                        'reclamation_id'  => $improvementSheet->correctiveAction?->reclamation_id,
-                        'code'            => $this->generateACNextCode(),
-                        'user_id'         => auth()->id(),
-                    ]);
+            $improvementSheet = DB::transaction(
+                function () use ($validated, $improvementSheet, $closed) {
 
                     $improvementSheet->update([
-                        'complementary_action' => $correctiveAction->id,
+                        'effectiveness' => $validated['effectiveness'],
+                        'observation_description' => $validated['observation_description'],
+                        'evaluation_date' => $validated['evaluation_date'],
+                        'closed' => $closed,
+                        'closing_date' => $closed === true
+                            ? ($validated['closing_date'] ?? now())
+                            : null,
+                        'statut' => $closed === true
+                            ? 'Clôturée'
+                            : 'En cours',
                     ]);
-                }
 
-                return $improvementSheet;
-            });
+                    if (
+                        $closed === null &&
+                        !$improvementSheet->complementary_action
+                    ) {
+                        $correctiveAction = CorrectiveAction::create([
+                            'description' => $validated['description'],
+                            'due_date' => $validated['due_date'],
+                            'service_id' => $validated['service_id'] ?? null,
+                            'responsable_id' => $validated['responsable_id'],
+                            'reclamation_id' =>
+                            $improvementSheet->correctiveAction?->reclamation_id,
+                            'code' => $this->generateACNextCode(),
+                            'user_id' => auth()->id(),
+                        ]);
+
+                        $improvementSheet->update([
+                            'complementary_action' => $correctiveAction->id,
+                        ]);
+                    }
+
+                    return $improvementSheet;
+                }
+            );
         } catch (\Throwable $e) {
-            report($e); // logs it via the exception handler
+            report($e);
 
             return response()->json([
-                'message' => "Une erreur est survenue lors de l'enregistrement de l'évaluation.",
+                'message' =>
+                "Une erreur est survenue lors de l'enregistrement de l'évaluation.",
             ], 500);
         }
 
         return response()->json([
             'message' => 'Évaluation enregistrée.',
-            'data'    => $improvementSheet->fresh(),
+            'data' => $improvementSheet->fresh(),
         ]);
     }
     /**

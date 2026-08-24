@@ -81,6 +81,11 @@ class User extends Authenticatable
         return $this->hasMany(CorrectiveAction::class, 'responsable_id');
     }
 
+
+    public function presons(){
+        return $this->hasMany(Person::class);
+    }
+
     /**
      * Corrective actions created by this user.
      */

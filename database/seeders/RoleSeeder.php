@@ -60,6 +60,7 @@ class RoleSeeder extends Seeder
             'telecharger_pieces.reclamation' => 'reclamation',
             'reouvrir.reclamation'           => 'reclamation',
             'imprimer.reclamation'           => 'reclamation',
+            'modifier.validation'           => 'reclamation',
 
             // Actions Correctives
             'voir.actions_correctives'       => 'action_corrective',

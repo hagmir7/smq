@@ -34,7 +34,7 @@ class ServiceController extends Controller
         // Optional withCount for related resources
         if ($request->boolean('with_counts')) {
             $query->withCount([
-                'improvementSheets',
+                'improvementSheet',
                 'improvementActions',
                 'correctiveActions',
                 'improvementSheetResponsibles',

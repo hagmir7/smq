@@ -48,7 +48,6 @@ class ImprovementSheet extends Model
     {
         return $this->belongsTo(Service::class);
     }
-
     public function improvementActions()
     {
         return $this->hasMany(ImprovementAction::class);

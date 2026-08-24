@@ -169,4 +169,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('reclamation-states', [App\Http\Controllers\DashboardController::class, 'reclamationStates']);
         Route::get('notifications', [App\Http\Controllers\DashboardController::class, 'notifications']);
     });
+
+    Route::prefix('persons')->group(function () {
+        Route::get('', [App\Http\Controllers\PersonController::class, 'index']);
+        Route::post('', [App\Http\Controllers\PersonController::class, 'store']);
+
+    });
 });

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\CorrectiveAction;
+use App\Models\Person;
 use App\Models\Reclamation;
 use App\Models\Service;
 use App\Models\User;
@@ -38,6 +39,7 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
             $table->foreignIdFor(CorrectiveAction::class, 'parent_id')->nullable();
+            $table->foreignIdFor(Person::class, 'person_id')->nullable();
             $table->timestamps();
         });
     }

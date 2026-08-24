@@ -25,14 +25,21 @@ class CorrectiveActionController extends Controller
                 'reclamation',
                 'service',
                 'responsable',
+                'person',
                 'user',
                 'parent',
                 'children',
                 'children.reclamation:id,code,client_code',
                 'children.service',
                 'children.responsable:id,full_name',
-                'improvementSheets:id,code'
-            ])->withCount('children')
+                'improvementSheet:id,code'
+            ]);
+
+            if(!auth()->user()->hasRole(['admin', 'smq'])){
+                $query->where('responsable_id', auth()->id());
+            }
+            
+            $query->withCount('children')
             ->filtered($request);
 
         $actions = $query->latest()->paginate($request->integer('per_page', 15));
@@ -46,7 +53,7 @@ class CorrectiveActionController extends Controller
     public function show(CorrectiveAction $correctiveAction): JsonResponse
     {
         return response()->json(
-            $correctiveAction->load(['reclamation', 'service', 'responsable', 'user', 'parent', 'children'])
+            $correctiveAction->load(['reclamation', 'service', 'responsable', 'user', 'parent', 'children', 'person'])
         );
     }
 
@@ -66,6 +73,7 @@ class CorrectiveActionController extends Controller
             'completion_date'         => ['sometimes', 'nullable', 'date'],
             'service_id'              => ['sometimes', 'nullable', 'exists:services,id'],
             'responsable_id'          => ['sometimes', 'nullable', 'exists:users,id'],
+            'person_id'          =>       ['sometimes', 'nullable', 'exists:people,id'],
             'parent_id'               => ['sometimes', 'nullable', 'exists:corrective_actions,id'],
         ]);
 
@@ -111,7 +119,7 @@ class CorrectiveActionController extends Controller
     {
         if ($correctiveAction?->parent_id) {
             return response()->json([
-                'message' => 'Impossible de créer une action de suivi à partir d\'une action de suivi.',
+                'message' => 'Impossible de créer une action de suivi à partir d\'une sous-action.',
             ], 422);
         }
 
@@ -135,7 +143,7 @@ class CorrectiveActionController extends Controller
                 },
             ],
             'service_id'             => ['nullable', 'exists:services,id'],
-            'responsable_id'         => ['nullable', 'exists:users,id'],
+            'person_id'         => ['nullable', 'exists:people,id'],
         ]);
 
         $child = CorrectiveAction::create([

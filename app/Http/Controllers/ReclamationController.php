@@ -276,7 +276,7 @@ class ReclamationController extends Controller
     {
         $actions = $reclamation->correctiveActions()
             ->where('parent_id', null)
-            ->with(['service', 'responsable', 'user', 'parent', 'children'])
+            ->with(['service', 'responsable', 'user', 'parent', 'children', 'children.person'])
             ->latest()
             ->get();
 
@@ -336,6 +336,17 @@ class ReclamationController extends Controller
             'closing_date' => ['required', 'date'],
         ]);
 
+        // Check if there are any corrective actions that are not closed
+        $hasOpenCorrectiveActions = $reclamation->correctiveActions()
+            ->whereNull('closing_date')
+            ->exists();
+
+        if ($hasOpenCorrectiveActions) {
+            return response()->json([
+                'message' => 'Impossible de clôturer la réclamation. Toutes les actions correctives doivent être clôturées avant de clôturer la réclamation.',
+            ], 422);
+        }
+
         $reclamation->update([
             'closing_date' => $validated['closing_date'],
             'statut' => 'Clôturée',
@@ -347,7 +358,6 @@ class ReclamationController extends Controller
             'data' => $reclamation->fresh(),
         ], 200);
     }
-
 
 
 
@@ -398,7 +408,7 @@ class ReclamationController extends Controller
     private function generateCode(string $prefix): string
     {
         return DB::transaction(function () use ($prefix) {
-            $lastCode = Reclamation::where('code', 'like', $prefix . '%')  // was CorrectiveAction
+            $lastCode = Reclamation::where('code', 'like', $prefix . '%')
                 ->lockForUpdate()
                 ->orderByDesc('id')
                 ->value('code');
@@ -414,8 +424,7 @@ class ReclamationController extends Controller
 
     public function download(Reclamation $reclamation)
     {
-
-        $reclamation->load('responsable', 'user', 'media', 'correctiveActions', 'correctiveActions.service', 'correctiveActions.responsable', 'correctiveActions.user', 'correctiveActions.parent', 'correctiveActions.children', 'correctiveActions.improvementSheets');
+        $reclamation->load('responsable', 'user', 'media', 'correctiveActions', 'correctiveActions.service', 'correctiveActions.responsable', 'correctiveActions.user', 'correctiveActions.parent', 'correctiveActions.children', 'correctiveActions.improvementSheet');
 
         return Pdf::view('pdf.reclamation', [
             'reclamation' => $reclamation,

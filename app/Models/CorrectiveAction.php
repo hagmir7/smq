@@ -29,6 +29,7 @@ class CorrectiveAction extends Model
         'parent_id',
         'status',
         'closing_date',
+        'person_id'
     ];
 
     protected $casts = [
@@ -53,6 +54,11 @@ class CorrectiveAction extends Model
     public function responsable(): BelongsTo
     {
         return $this->belongsTo(User::class, 'responsable_id');
+    }
+
+
+    public function person(){
+        return $this->belongsTo(Person::class, 'person_id');
     }
 
     /**
@@ -82,9 +88,9 @@ class CorrectiveAction extends Model
     /**
      * Improvement sheets raised from this corrective action.
      */
-    public function improvementSheets(): HasOne
+    public function improvementSheet(): HasOne
     {
-        return $this->hasOne(ImprovementSheet::class, 'id', 'id');
+        return $this->hasOne(ImprovementSheet::class);
     }
 
 

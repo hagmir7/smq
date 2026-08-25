@@ -110,7 +110,7 @@ class ImprovementSheetController extends Controller
                 ...collect($validated)->except('responsibles')->all(),
                 'code'           => $this->generateNextCode(),
                 'finding_source' => $validated['finding_source'] ?? 'Action corrective',
-                'statut'         => $validated['statut'] ?? 'Planifié',
+                'statut'         => $validated['statut'] ?? 'En attend',
             ]);
 
             return $sheet;
@@ -453,5 +453,62 @@ class ImprovementSheetController extends Controller
 
             return 'AC' . str_pad($lastNumber + 1, 5, '0', STR_PAD_LEFT);
         });
+    }
+
+    public function register(ImprovementSheet $improvementSheet): JsonResponse
+    {
+        if (!auth()->user()->can('enregistre.fiche_amelioration')) {
+            return response()->json([
+                'message' => 'Vous n’avez pas l’autorisation d’enregistrer cette fiche.',
+            ], 403);
+        }
+
+        $improvementSheet->update([
+            'statut' => 'Enregistré',
+            'registered_date' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'La fiche d’amélioration a été enregistrée avec succès.',
+            'data' => $improvementSheet->fresh(),
+        ]);
+    }
+
+
+    public function approve(ImprovementSheet $improvementSheet): JsonResponse
+    {
+        if (!auth()->user()->can('approuver.fiche_amelioration')) {
+            return response()->json([
+                'message' => 'Vous n’avez pas l’autorisation d’approuver cette fiche.',
+            ], 403);
+        }
+
+        $improvementSheet->update([
+            'statut' => 'Approuvé',
+            'approved_date' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'La fiche d’amélioration a été approuvée avec succès.',
+            'data' => $improvementSheet->fresh(),
+        ]);
+    }
+
+    public function cancel(ImprovementSheet $improvementSheet): JsonResponse
+    {
+        if (!auth()->user()->can('annuler.fiche_amelioration')) {
+            return response()->json([
+                'message' => 'Vous n’avez pas l’autorisation d’annuler cette fiche.',
+            ], 403);
+        }
+
+        $improvementSheet->update([
+            'statut' => 'Annulé',
+        ]);
+
+        return response()->json([
+            'message' => 'La fiche d’amélioration a été annulée avec succès.',
+            'data' => $improvementSheet->fresh(),
+        ]);
     }
 }

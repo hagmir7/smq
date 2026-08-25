@@ -106,7 +106,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     Route::prefix('improvement-sheets')->group(function () {
-        //  Route::get('{improvementSheet}/download', [ImprovementSheetController::class, 'download']);
+
         Route::get('/', [ImprovementSheetController::class, 'index']);
         Route::get('{improvementSheet}', [ImprovementSheetController::class, 'show']);
         Route::post('/', [ImprovementSheetController::class, 'store']);
@@ -116,9 +116,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('{improvementSheet}/improvement-actions', [ImprovementSheetController::class, 'improvementActions']);
         Route::post('{improvementSheet}/improvement-actions', [ImprovementSheetController::class, 'improvementActionsStore']);
         Route::get('{improvementSheet}/responsibles', [ImprovementSheetController::class, 'responsibles']);
-    
+
         Route::post('{improvementSheet}/responsibles', [ImprovementSheetController::class, 'responsiblesStore']);
-         Route::get('{improvementSheet}/download', [ImprovementSheetController::class, 'download']);
+        Route::get('{improvementSheet}/download', [ImprovementSheetController::class, 'download']);
+        Route::put('{improvementSheet}/register', [ImprovementSheetController::class, 'register']);
+        Route::patch('{improvementSheet}/approve', [ImprovementSheetController::class, 'approve']);
+        Route::patch('{improvementSheet}/cancel', [ImprovementSheetController::class, 'cancel']);
     });
 
 

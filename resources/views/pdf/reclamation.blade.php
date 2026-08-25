@@ -130,7 +130,7 @@ $objetPredefini = collect(array_merge($objetGauche, $objetDroite))
 </p>
 
 <p class="text-end p-0 m-0"><strong>Visa du Directeur :</strong></p>
-<p class="p-6"></p>
+<p class="p-6"> Aouragh Abid</p>
 
 {{-- ═══════════════════════════════════════════════════════ --}}
 {{-- II. PARTIE A REMPLIR PAR LE RESPONSABLE DU TRAITEMENT   --}}

@@ -23,6 +23,8 @@ class ImprovementSheet extends Model
         'observation_description',
         'evaluation_date',
         'closing_date',
+        'registered_date',
+        'approved_date'
     ];
 
     protected $dateFormat = 'Y-m-d\TH:i:s.v';
@@ -32,6 +34,8 @@ class ImprovementSheet extends Model
         'effectiveness'    => 'boolean',
         'evaluation_date' => 'date',
         'closing_date'     => 'date',
+        'registered_date'     => 'date',
+        'approved_date'     => 'date',
     ];
 
     public function correctiveAction(): BelongsTo

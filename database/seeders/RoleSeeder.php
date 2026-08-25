@@ -86,6 +86,9 @@ class RoleSeeder extends Seeder
             'cloturer.fiche_amelioration'    => 'fiche_amelioration',
             'evaluer.fiche_amelioration'     => 'fiche_amelioration',
             'imprimer.fiche_amelioration'    => 'fiche_amelioration',
+            'enregistre.fiche_amelioration'    => 'fiche_amelioration',
+            'approuver.fiche_amelioration'   => 'fiche_amelioration',
+            'annuler.fiche_amelioration'   => 'fiche_amelioration',
 
             // Actions d'Amélioration
             'voir.action_ameliorations'      => 'action_amelioration',

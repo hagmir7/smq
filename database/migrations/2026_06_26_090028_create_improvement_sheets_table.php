@@ -23,7 +23,9 @@ return new class extends Migration
             $table->string('title', 500)->nullable();
             $table->foreignIdFor(User::class, 'responsable_id')->nullable();
             $table->foreignIdFor(Service::class)->nullable();
-            $table->string('statut', 30)->default('Planifié');
+            $table->string('statut', 30)->default('En attend'); // - En attend - Enregistré - Approuvé - En cours - Clôturé
+            $table->dateTime('registered_date')->nullable();
+            $table->dateTime('approved_date')->nullable();
             // Evaluation
             $table->boolean('closed')->nullable();
             $table->date('closing_date')->nullable();

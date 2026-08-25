@@ -129,10 +129,15 @@ class DashboardController extends Controller
             ->where('responsable_id', auth()->id())
             ->count();
 
+        
+        $registered_improvement_sheets = \App\Models\ImprovementSheet::where('statut', 'Enregistré')
+            ->count();
+
         return response()->json([
             'new_recalmations_count' => $new_recalmations_count,
             'validated_reclamation_count' => $validated_reclamation_count,
-            'new_corrective_action' => $new_corrective_action
+            'new_corrective_action' => $new_corrective_action,
+            'registered_improvement_sheets' => $registered_improvement_sheets
         ]);
     }
 }

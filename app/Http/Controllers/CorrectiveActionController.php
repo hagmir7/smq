@@ -33,6 +33,7 @@ class CorrectiveActionController extends Controller
                 'children',
                 'children.reclamation:id,code,client_code',
                 'children.service',
+                'children.person',
                 'children.responsable:id,full_name',
                 'improvementSheet:id,code'
             ]);

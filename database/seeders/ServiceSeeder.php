@@ -96,6 +96,7 @@ class ServiceSeeder extends Seeder
                 [
                     'description' => $data['description'],
                     'responsible_id' => $user?->id,
+                    'code' => $data['code']
                 ]
             );
         }

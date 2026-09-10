@@ -58,11 +58,11 @@ class ReclamationController extends Controller
             $query->whereDate('claimant_date', '<=', $request->date('claimant_date_to'));
         }
 
-        if (auth()->user()->hasRole('pilote')) {
-            $query = Reclamation::whereHas('correctiveActions', function ($query) {
-                $query->where('responsable_id', auth()->id());
-            });
-        }
+        // if (auth()->user()->hasRole('pilote')) {
+        //     $query = Reclamation::whereHas('correctiveActions', function ($query) {
+        //         $query->where('responsable_id', auth()->id());
+        //     });
+        // }
 
         $reclamations = $query->latest()->paginate($request->integer('per_page', 15));
 

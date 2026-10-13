@@ -22,7 +22,7 @@ class UserSeeder extends Seeder
                 'service' => 'RH & SI',
             ],
             [
-                'code' => 'IC33',
+                'code' => 'IC033',
                 'full_name' => 'ESSIKILI Jihad',
                 'email' => 'essjihad@intercocina.com',
                 'service' => 'Direction Générale',
@@ -39,41 +39,18 @@ class UserSeeder extends Seeder
                 'email' => 'ac.assim@intercocina.com',
                 'service' => 'RH & SI',
             ],
+
             [
-                'code' => 'IC219',
-                'full_name' => 'LAHCHIRI Aimad',
-                'email' => 'qualite@intercocina.com',
-                'service' => 'Contrôle qualité / HSE',
+                'code' => 'ST010',
+                'full_name' => 'EL GHOUBNI Abdeladim',
+                'email' => 'abid@intercocina.com',
+                'service' => 'Commercial',
             ],
             [
-                'code' => 'IC229',
-                'full_name' => 'JABRAN Nada',
-                'email' => 'achat@intercocina.com',
-                'service' => 'Achat',
-            ],
-            [
-                'code' => 'IC233',
-                'full_name' => 'AKOUAOUCHI Oussama',
-                'email' => 'maintenance@intercocina.com',
-                'service' => 'Maintenance',
-            ],
-            [
-                'code' => 'IC269',
-                'full_name' => 'MRIMOU Ikram',
-                'email' => 'fabrication@intercocina.com',
-                'service' => 'Fabrication',
-            ],
-            [
-                'code' => 'IC309',
-                'full_name' => 'MAAZOUZI Abdellah',
-                'email' => 'stock@intercocina.com',
-                'service' => 'Stock et Expédition',
-            ],
-            [
-                'code' => 'IC322',
-                'full_name' => 'MEHDI Mimouna',
-                'email' => 'marketing@intercocina.com',
-                'service' => 'Marketing',
+                'code' => 'IC239',
+                'full_name' => 'MAZOUZ Ilhame',
+                'email' => 'abid@intercocina.com',
+                'service' => 'Commercial',
             ],
             [
                 'code' => 'ST001',
@@ -82,19 +59,52 @@ class UserSeeder extends Seeder
                 'service' => 'Commercial',
             ],
 
-            [
-                'code' => 'ST010',
-                'full_name' => 'EL GHOUBNI Abdeladim',
-                'email' => 'abid@intercocina.com',
-                'service' => 'Commercial',
-            ],
 
             [
-                'code' => 'IC239',
-                'full_name' => 'MAZOUZ Ilhame',
-                'email' => 'abid@intercocina.com',
-                'service' => 'Commercial',
+                'code' => 'SM171',
+                'full_name' => 'EL YAAKOUBI Nabila',
+                'email' => 'nabil@intercocina.com',
+                'service' => 'Fabrication',
             ],
+
+
+            // [
+            //     'code' => 'IC219',
+            //     'full_name' => 'LAHCHIRI Aimad',
+            //     'email' => 'qualite@intercocina.com',
+            //     'service' => 'Contrôle qualité / HSE',
+            // ],
+            // [
+            //     'code' => 'IC229',
+            //     'full_name' => 'JABRAN Nada',
+            //     'email' => 'achat@intercocina.com',
+            //     'service' => 'Achat',
+            // ],
+            // [
+            //     'code' => 'IC233',
+            //     'full_name' => 'AKOUAOUCHI Oussama',
+            //     'email' => 'maintenance@intercocina.com',
+            //     'service' => 'Maintenance',
+            // ],
+            // [
+            //     'code' => 'IC269',
+            //     'full_name' => 'MRIMOU Ikram',
+            //     'email' => 'fabrication@intercocina.com',
+            //     'service' => 'Fabrication',
+            // ],
+            // [
+            //     'code' => 'IC309',
+            //     'full_name' => 'MAAZOUZI Abdellah',
+            //     'email' => 'stock@intercocina.com',
+            //     'service' => 'Stock et Expédition',
+            // ],
+            // [
+            //     'code' => 'IC322',
+            //     'full_name' => 'MEHDI Mimouna',
+            //     'email' => 'marketing@intercocina.com',
+            //     'service' => 'Marketing',
+            // ],
+
         ];
 
         foreach ($users as $data) {

@@ -162,7 +162,7 @@ $objetPredefini = collect(array_merge($objetGauche, $objetDroite))
     </tr>
     <tr>
         <td class="border border-black p-2 align-top" style="min-height:80px;">
-            <p class="mb-3">{{ $reclamation->post_analysis }}</p>
+            <p class="mb-3">{{ $reclamation->cause_analysis }}</p>
             <p class="mb-1">
                 <strong>Pour les réclamations :</strong>
                 {{ $reclamation->is_justifiee === true ? '☑' : '☐' }} Réclamation justifiée

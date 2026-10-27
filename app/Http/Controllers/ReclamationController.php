@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Spatie\LaravelPdf\Facades\Pdf;
-
+use Illuminate\Validation\Rule;
 
 class ReclamationController extends Controller
 {
@@ -196,7 +196,7 @@ class ReclamationController extends Controller
             'responsable_id'    => ['nullable', 'exists:users,id'],
         ]);
 
-       
+
         $reclamation->update([
             'post_analysis'     => $validated['post_analysis'],
             'is_recevable'      => intval($validated['is_recevable']),
@@ -284,9 +284,6 @@ class ReclamationController extends Controller
     }
 
 
-    /**
-     * Create a corrective action (linked to a reclamation).
-     */
     public function storeCorrectiveActions(Request $request, Reclamation $reclamation): JsonResponse
     {
         $validated = $request->validate([
@@ -308,8 +305,16 @@ class ReclamationController extends Controller
             ],
             'service_id'              => ['nullable', 'exists:services,id'],
             'responsable_id'          => ['nullable', 'exists:users,id'],
-            'parent_id'               => ['nullable', 'exists:corrective_actions,id'],
+            'person_id'               => ['nullable', 'exists:people,id'],
+            'parent_id'               => [
+                'nullable',
+                Rule::exists('corrective_actions', 'id')
+                    ->where('reclamation_id', $reclamation->id),
+            ],
         ]);
+
+        // person_id and responsable_id are saved exactly as received.
+        $isSubAction = !empty($validated['parent_id']);
 
         $correctiveAction = DB::transaction(function () use ($validated, $reclamation) {
             return CorrectiveAction::create([
@@ -318,15 +323,22 @@ class ReclamationController extends Controller
                 'type'            => $validated['type'] ?? 'Action corrective',
                 'reclamation_id'  => $reclamation->id,
                 'user_id'         => Auth::id(),
-                'status'          => $validated['responsable_id'] ? 'Affectée' : 'Créée',
+                'status'          => isset($validated['responsable_id'])
+                    || isset($validated['person_id'])
+                    || isset($validated['service_id'])
+                    ? 'Affectée'
+                    : 'Créée',
             ]);
         });
 
-        $correctiveAction->responsable->notify(new CorrectiveActionCreated($correctiveAction));
+        // Only notify when a responsable (user) exists.
+        $correctiveAction->responsable?->notify(new CorrectiveActionCreated($correctiveAction));
 
         return response()->json([
-            'message' => 'Action corrective créée avec succès.',
-            'data'    => $correctiveAction->load(['service', 'responsable', 'user', 'parent']),
+            'message' => $isSubAction
+                ? 'Sous-action créée avec succès.'
+                : 'Action corrective créée avec succès.',
+            'data'    => $correctiveAction->load(['service', 'responsable', 'person', 'user', 'parent']),
         ], 201);
     }
 

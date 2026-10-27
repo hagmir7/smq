@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Spatie\LaravelPdf\Facades\Pdf;
 use Illuminate\Validation\Rule;
@@ -233,23 +234,40 @@ class ReclamationController extends Controller
             'cause_analysis'        => ['nullable', 'string'],
             'priority'              => ['nullable', 'string', 'max:20'],
             'planned_closing_date'  => ['nullable', 'date'],
+            'justification_file'    => [
+                'nullable',
+                'file',
+                'mimes:jpg,jpeg,png,webp,pdf,doc,docx',
+                'max:10240', // 10 MB
+            ],
         ]);
 
-        $reclamation->update([
+        $data = [
             'processing_analysis'  => $validated['processing_analysis'],
             'is_justifiee'         => $validated['is_justifiee'],
             'cause_analysis'       => $validated['cause_analysis'] ?? null,
             'priority'             => $validated['priority'] ?? $reclamation->priority,
             'planned_closing_date' => $validated['planned_closing_date'] ?? null,
             'workflow_step'        => 3,
-        ]);
+        ];
+
+        if ($request->hasFile('justification_file')) {
+            // Remove the previous file if one exists
+            if ($reclamation->justification_file) {
+                Storage::disk('public')->delete($reclamation->justification_file);
+            }
+
+            $data['justification_file'] = $request->file('justification_file')
+                ->store("reclamations/{$reclamation->id}/justifications", 'public');
+        }
+
+        $reclamation->update($data);
 
         return response()->json([
             'message' => 'Traitement finalisé, réclamation clôturée (étape 3).',
             'data'    => $reclamation->fresh(),
         ]);
     }
-
     /**
      * Generic update (e.g. editing fields without changing workflow step).
      */
@@ -267,6 +285,13 @@ class ReclamationController extends Controller
             'message' => 'Réclamation mise à jour.',
             'data'    => $reclamation->fresh(),
         ]);
+    }
+
+    public function downloadJustification(Reclamation $reclamation)
+    {
+        abort_unless($reclamation->justification_file, 404);
+
+        return Storage::disk('local')->download($reclamation->justification_file);
     }
 
     /**

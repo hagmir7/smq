@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
-
+use Illuminate\Support\Facades\Storage;
 
 class Reclamation extends Model implements HasMedia
 {
@@ -41,6 +41,7 @@ class Reclamation extends Model implements HasMedia
         'user_id',
         'status',
         'registration_date',
+        'justification_file',
     ];
     
 
@@ -80,8 +81,14 @@ class Reclamation extends Model implements HasMedia
             ->nonQueued(); // keep it simple; drop this if you queue conversions
     }
 
+    protected $appends = ['justification_file_url'];
 
-
+    public function getJustificationFileUrlAttribute(): ?string
+    {
+        return $this->justification_file
+            ? Storage::disk('public')->url($this->justification_file)
+            : null;
+    }
 
     /**
      * User responsible for handling the reclamation.
